@@ -116,10 +116,12 @@ Parquet; JSON remains the format for the audit summary and run manifest.
 
 ## 4. Intended schemas
 
-Source identifiers are parsed and stored as signed `int64`. Required identifiers that are missing,
-non-numeric, fractional, or outside the signed 64-bit range are invalid and their rows must be
-quarantined. Synthetic hashes such as `offer_id` remain strings. Numeric parsing must be strict and
-locale-independent.
+Actual numeric identifiers, specifically raw product/comment `id` and comment `product_id`, are
+parsed and stored as signed `int64`. Required numeric identifiers that are missing, non-numeric,
+fractional, or outside the signed 64-bit range are invalid and their rows must be quarantined.
+Opaque business codes such as `seller_code` and synthetic hashes such as `offer_id` remain strings;
+numeric-looking business codes must not be routed through identifier parsing. Numeric parsing must
+be strict and locale-independent.
 
 ### 4.1 `products_clean`
 
@@ -184,8 +186,8 @@ One canonical row per `comment_id` after exact full-row deduplication and confli
 | `disadvantages` | string | yes | Raw text/list representation; no semantic parsing yet |
 | `likes` | int64 | yes | Strictly parsed, non-negative count |
 | `dislikes` | int64 | yes | Strictly parsed, non-negative count |
-| `seller_title` | string | yes | Optional seller title |
-| `seller_code` | int64 | yes | Strictly parsed optional seller identifier |
+| `seller_title` | string | yes | Optional seller title; exact lowercase `nan` sentinel becomes null |
+| `seller_code` | string | yes | Opaque source business code; empty/blank or exact lowercase `nan` sentinel becomes null, otherwise preserved exactly |
 | `true_to_size_rate` | string | yes | Optional size-fit category |
 | `comment_id_conflict` | boolean | no | True when distinct rows shared this comment ID |
 | `canonical_source_row_number` | int64 | no | Source row selected by the canonical rule |
@@ -228,8 +230,8 @@ blank; that is not a cleaning-table deletion rule.
 | comments | `disadvantages` | comments | `disadvantages` | Blank to null; otherwise preserve |
 | comments | `likes` | comments | `likes` | Strict non-negative integer parse |
 | comments | `dislikes` | comments | `dislikes` | Strict non-negative integer parse |
-| comments | `seller_title` | comments | `seller_title` | Blank to null |
-| comments | `seller_code` | comments | `seller_code` | Nullable signed-`int64` parse; flag unrecognized values |
+| comments | `seller_title` | comments | `seller_title` | Empty/blank and exact lowercase `nan` sentinel to null; otherwise preserve exactly |
+| comments | `seller_code` | comments | `seller_code` | Empty/blank and exact lowercase `nan` sentinel to null; preserve every other value exactly as an opaque string, including leading zeros |
 | comments | `true_to_size_rate` | comments | `true_to_size_rate` | Blank to null; preserve category |
 
 ## 6. Deterministic canonical-selection rules
@@ -282,7 +284,7 @@ quarantine preservation does not make the clean-table action lossless.
 | RAW-001 | Any source row | Read source only; record checksum and row number | Run manifest | No |
 | ID-001 | Required ID is a whole number within signed `int64` range | Parse and retain as `int64` | Valid-ID count | No |
 | ID-002 | Required ID is missing, non-numeric, fractional, or outside `int64` | Quarantine row | Invalid-required-ID count | Yes |
-| ID-003 | Optional `seller_code` cannot be parsed as `int64` | Set null and flag; preserve raw value in audit | Invalid-optional-ID count | Yes |
+| ID-003 | A field explicitly designated as an optional numeric identifier cannot be parsed as `int64` | Set null and flag; preserve raw value in audit | Invalid-optional-ID count by field | Yes |
 | BOOL-001 | Boolean source value is exactly observed `True` or `False` | Parse to boolean | Boolean value counts | No |
 | BOOL-002 | Required boolean has any other representation | Quarantine affected row and preserve raw value | Unrecognized-boolean count | Yes |
 | TXT-001 | Text is empty or whitespace-only | Convert to null | `blank_text_to_null_count` per column | Yes |
@@ -302,6 +304,7 @@ quarantine preservation does not make the clean-table action lossless.
 | OFF-005 | Valid positive `price_raw` exceeds the global 99.9th percentile of valid positive prices | Retain unchanged; flag for review | `high_price_review=true`; threshold in audit/manifest | No |
 | OFF-006 | Any valid price | Preserve as `price_raw`; derive `price_toman=price_raw/10`; never label current/latest | `currency_status="IRR_inferred"` | No |
 | OFF-007 | `min_price_last_month=0` | Set history value to null; do not mark current price invalid | `missing_price_history=true` | Yes |
+| OFF-008 | Non-missing `min_price_last_month` is negative, fractional, non-numeric, or exceeds signed `int64` | Exclude offer from clean table; quarantine raw row | Invalid-price-history quarantine count | Yes |
 | COM-001 | Entire comment raw row repeats | Keep first source occurrence; drop later occurrences | `comments_exact_full_row_duplicates_removed` | Yes |
 | COM-002 | Distinct rows share `comment_id` | Preserve all in conflict audit; apply canonical rule | `comment_id_conflict=true` | Yes |
 | COM-003 | Optional comment fields are missing | Retain comment | Missing counts per column | No |
@@ -311,6 +314,10 @@ quarantine preservation does not make the clean-table action lossless.
 | COM-007 | Rate is `2500` | Apply COM-006 explicitly | Invalid-rate audit includes raw `2500` | Yes |
 | COM-008 | Recommendation is present or missing | Preserve independently; never derive from rate | Recommendation distribution audit | No |
 | COM-009 | Body is missing | Retain comment; defer embedding eligibility to downstream text assembly | Missing-body count | No |
+| COM-010 | `seller_code` is nonblank and is not exact lowercase `nan` | Preserve the exact source text; do not parse, strip, or normalize | `seller_code_nonblank_real_count` | No |
+| COM-011 | `seller_code` is missing | Retain as null | `seller_code_missing_count` | No |
+| COM-012 | Optional `likes` or `dislikes` is nonblank but not a non-negative signed-`int64` integer | Set null; preserve raw value in row audit | Invalid-optional-count by field | Yes |
+| COM-013 | `seller_code` or `seller_title` is exactly lowercase `nan` | Convert to null using this explicit column-specific sentinel rule | Sentinel-to-null aggregate count by column | Yes |
 | DATE-001 | `created_at` matches `D <recognized Persian Jalali month> YYYY` | Preserve exact raw value and construct canonical Jalali `YYYY-MM-DD` | Date-format and range audit | No |
 | DATE-002 | Valid canonical Jalali date | Convert with an explicit tested Jalali algorithm to Gregorian date-only value | Conversion implementation/version in manifest | No |
 | DATE-003 | Date shape, month, or Jalali day is invalid in a future source | Quarantine row and preserve raw value; never use ambiguous automatic parsing | Invalid-date audit | Yes |
@@ -366,6 +373,13 @@ quarantine preservation does not make the clean-table action lossless.
 - All alternatives for conflicting comment IDs are present in `comment_conflicts`.
 - Missing optional fields do not reduce row counts.
 - Missing body does not remove a row from `comments_clean`.
+- `seller_code` is null or an exact nonblank, non-sentinel source string. Exact lowercase `nan`
+  becomes null only for `seller_code` and `seller_title`; different casing and unrelated NA-like
+  opaque tokens are not inferred as missing. Numeric-looking values remain strings, leading zeros
+  are preserved, and no value is subjected to ID-003 merely because it is alphanumeric or Unicode.
+- The audit separately reports missing, blank-to-null, lowercase-`nan` sentinel-to-null, and real
+  nonblank `seller_code` counts. These routine states use aggregate counters rather than row-level
+  audit records.
 - `is_buyer` contains only parsed source `True`/`False`; unrecognized values are quarantined.
 - `created_at_raw` exactly preserves the source text.
 - `created_at_jalali` matches `YYYY-MM-DD` and represents the same validated Jalali date.
@@ -398,7 +412,7 @@ equation and separately report overlapping flags.
 
 ```json
 {
-  "spec_version": "1.0.0",
+  "spec_version": "1.0.2",
   "run_id": "deterministic hash of inputs, configuration, and code version",
   "sources": {},
   "products_clean": {
@@ -448,6 +462,10 @@ implementation/version, its test-vector version, and the observed comment-date r
 ## 10. Streaming and reproducibility design constraints
 
 - Read CSVs with configurable chunks, defaulting to 100,000 rows or less if memory tests require.
+- Disable pandas' default NA-token vocabulary (`keep_default_na=False`) or use an equivalent exact
+  CSV policy before applying field-specific missing rules. Opaque strings such as uppercase
+  `seller_code="NAN"` remain source values; only exact lowercase `nan` in `seller_code` and
+  `seller_title` is the approved sentinel, and an actually empty CSV field is missing.
 - Use disk-backed keyed state, partitioning, or an embedded database for global deduplication,
   canonical grouping, and joins. Never retain all comments or their text in memory.
 - Compute full-row and canonical hashes from explicit column order, type tags, null markers, UTF-8
@@ -498,6 +516,10 @@ implementation/version, its test-vector version, and the observed comment-date r
     inference is prohibited.
 17. The implementation preserves category labels unchanged and treats future corrections as a
     separate versioned enrichment output.
+18. `seller_code` round-trips as nullable exact text, including numeric-looking strings, leading
+    zeros, and Unicode; it is never interpreted as a numeric identifier. Exact lowercase `nan` in
+    both seller columns converts to null with per-column aggregate counts, while uppercase `NAN`
+    and all other nonblank codes remain unchanged.
 
 ## 12. Remaining unresolved questions
 

@@ -12,6 +12,8 @@ unresolved question to resolved.
 | Comments source | `data/raw/digikala-comments.csv` |
 | Products rows scanned for currency sample | 1,283,496, in 100,000-row chunks |
 | Comments rows for date diagnostic | Full 6,156,289-row scan, in 100,000-row chunks |
+| Comments rows for `seller_code` diagnostic | Full 6,156,289-row scan, in 100,000-row chunks |
+| Seller sentinel cross-column scan | `2026-08-25T22:27:34+03:30`; full 6,156,289 rows, three columns, 100,000-row chunks |
 | Products row limit for price-history diagnostic | Exactly the first 100,000 rows |
 | Python | `3.13.13` |
 | pandas | `2.3.3` |
@@ -222,7 +224,139 @@ not establish an exact lookback window, capture method, currency, or whether the
 were captured simultaneously. The exact semantics remain unresolved. Treating zero as unavailable
 history remains a conservative cleaning policy rather than a discovered temporal definition.
 
-## 4. Diagnostic conclusions
+## 4. `seller_code` full streaming diagnostic
+
+This read-only scan ran at `2026-08-25T22:15:45+03:30` and read only `seller_code` from all
+6,156,289 comment rows in 100,000-row chunks. An exact temporary SQLite primary-key index was used
+for distinct values and was closed and removed after the scan. Here, “missing” means an empty CSV
+field, “blank” means a nonempty whitespace-only value, “numeric-only” means ASCII digits only,
+“alphanumeric” means ASCII letters/digits with at least one letter, and “other” means any remaining
+nonblank pattern.
+
+| Measure | Count |
+|---|---:|
+| Total rows | 6,156,289 |
+| Missing | 0 |
+| Blank | 0 |
+| Nonblank | 6,156,289 |
+| Numeric-only | 0 |
+| Alphanumeric | 6,156,289 |
+| Other-character pattern | 0 |
+| Distinct lexical nonblank values (exact) | 29,214 |
+| Leading-zero values | 0 |
+| Leading/trailing whitespace | 0 |
+| Containing non-ASCII characters | 0 |
+| Minimum nonblank length | 3 |
+| Maximum nonblank length | 5 |
+
+These are lexical counts only. The follow-up cross-column diagnostic below establishes that the
+302,181 lowercase `nan` tokens are a semantic missing/not-applicable sentinel, leaving 5,854,108
+real seller-code values and 29,213 distinct real codes. Every real code has length 5; the lexical
+minimum of 3 is the sentinel itself.
+
+### Thirty deterministic distinct examples
+
+Examples were selected by ascending SHA-256 digest of the exact UTF-8 source value. All observed
+values belong to the single alphanumeric pattern; therefore no numeric-only or other-pattern
+examples exist to include.
+
+| # | Pattern | Exact raw `seller_code` |
+|---:|---|---|
+| 1 | alphanumeric | `AWNAZ` |
+| 2 | alphanumeric | `EU3WA` |
+| 3 | alphanumeric | `CKYF3` |
+| 4 | alphanumeric | `CZKCG` |
+| 5 | alphanumeric | `DNVXR` |
+| 6 | alphanumeric | `EKAV3` |
+| 7 | alphanumeric | `5AEF2` |
+| 8 | alphanumeric | `A7JX3` |
+| 9 | alphanumeric | `E9TEZ` |
+| 10 | alphanumeric | `CMTJ3` |
+| 11 | alphanumeric | `EWCN9` |
+| 12 | alphanumeric | `CRURW` |
+| 13 | alphanumeric | `DJ6A2` |
+| 14 | alphanumeric | `C3CWG` |
+| 15 | alphanumeric | `EXKEX` |
+| 16 | alphanumeric | `EKZRX` |
+| 17 | alphanumeric | `CFTVX` |
+| 18 | alphanumeric | `AJWG3` |
+| 19 | alphanumeric | `C5F5S` |
+| 20 | alphanumeric | `CC3CX` |
+| 21 | alphanumeric | `5AKEC` |
+| 22 | alphanumeric | `D4JMT` |
+| 23 | alphanumeric | `DMUVT` |
+| 24 | alphanumeric | `DRHRT` |
+| 25 | alphanumeric | `CZTVC` |
+| 26 | alphanumeric | `C7RA5` |
+| 27 | alphanumeric | `EURSG` |
+| 28 | alphanumeric | `EUUF9` |
+| 29 | alphanumeric | `F2VE6` |
+| 30 | alphanumeric | `AYERT` |
+
+The lexical evidence establishes that real `seller_code` values are opaque business codes, not
+numeric identifiers. Numeric parsing would discard them. However, nonblankness alone does not prove
+that a token is real; the cross-column diagnostic below identifies one exact column-specific
+sentinel. CSV readers must still disable broad default NA-token inference so raw tokens remain
+available for explicit, case-sensitive field rules.
+
+### Seller sentinel cross-column reconciliation
+
+A second full scan read only `seller_code`, `seller_title`, and `is_buyer` with
+`keep_default_na=False`. Token matching was exact and case-sensitive.
+
+| Exact raw token | `seller_code` | `seller_title` |
+|---|---:|---:|
+| Empty string | 0 | 0 |
+| Whitespace-only | 0 | 0 |
+| `NAN` | 0 | 0 |
+| `NaN` | 0 | 0 |
+| `nan` | 302,181 | 302,181 |
+| `NA` | 0 | 0 |
+| `N/A` | 0 | 0 |
+| `NULL` | 0 | 0 |
+| `null` | 0 | 0 |
+| `None` | 0 | 0 |
+| All other values | 5,854,108 | 5,854,108 |
+
+Thus the original hypothesis is confirmed with a casing correction: the raw sentinel is exactly
+lowercase `nan`, not uppercase `NAN`.
+
+| `seller_code == "nan"` | `is_buyer=True` | `is_buyer=False` | Total |
+|---|---:|---:|---:|
+| False | 5,854,108 | 0 | 5,854,108 |
+| True | 0 | 302,181 | 302,181 |
+
+The identical cross-tab applies to `seller_title == "nan"`.
+
+| Seller-code status | Seller-title real | Seller-title sentinel | Total |
+|---|---:|---:|---:|
+| Real | 5,854,108 | 0 | 5,854,108 |
+| Sentinel | 0 | 302,181 | 302,181 |
+
+| Seller-code status | `is_buyer=True` | `is_buyer=False` | Total |
+|---|---:|---:|---:|
+| Real | 5,854,108 | 0 | 5,854,108 |
+| Sentinel | 0 | 302,181 | 302,181 |
+
+There are no empty or whitespace-only seller values in this source. The 302,181 lowercase-`nan`
+rows are exactly the 302,181 non-buyer rows, both seller columns are sentinel on exactly the same
+rows, no buyer row uses the sentinel, and no sentinel code is paired with a real title.
+
+For the 5,854,108 non-sentinel code occurrences:
+
+| Real-code property | Result |
+|---|---:|
+| Length 5 | 5,854,108 |
+| Exact distinct real codes | 29,213 |
+| Codes associated with exactly one title | 29,198 |
+| Codes associated with two distinct titles | 15 |
+| Maximum distinct titles for one code | 2 |
+
+Therefore code-to-title mapping is almost, but not completely, one-to-one. The 15 exceptions must
+not be silently reconciled by row-level cleaning. No real seller title is associated with sentinel
+code `nan`.
+
+## 5. Diagnostic conclusions
 
 - Human assessment of the 30-product plausibility sample strongly infers that `Price` is IRR/rial,
   but this is not authoritatively confirmed. Raw prices must always be preserved. A derived display
@@ -237,3 +371,8 @@ history remains a conservative cleaning policy rather than a discovered temporal
   price, but it cannot establish exact `min_price_last_month` business semantics.
 - No current web prices were used. Jalali conversion was diagnostic only; no source values were
   rewritten.
+- Of 6,156,289 lexical nonblank `seller_code` values, exactly 302,181 are the lowercase `nan`
+  missing/not-applicable sentinel and 5,854,108 are real opaque business codes. The real codes have
+  29,213 distinct values, are all length 5, and must remain strings. Exact lowercase `nan` becomes
+  null only through an explicit column-specific rule; other tokens are not interpreted through a
+  broad pandas NA vocabulary.
