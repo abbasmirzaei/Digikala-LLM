@@ -54,8 +54,8 @@ The implementation and audit must distinguish these states:
 - **Review-only outlier:** a valid value merits inspection but remains in the clean output. A price
   above the global positive-price 99.9th percentile is the initial example.
 - **Unresolved business semantics:** the value may be technically valid, but its meaning is not
-  authoritative. Price currency, offer recency, and date interpretation are examples. Do not turn
-  these uncertainties into invalid-data rules.
+  authoritative. Source confirmation of price currency, offer recency, and price-history capture
+  are examples. Do not turn these uncertainties into invalid-data rules.
 
 ### 2.2 Temporal and currency policy
 
@@ -63,17 +63,31 @@ The implementation and audit must distinguish these states:
   and product price capture date are unresolved metadata.
 - Never describe an offer or price as current, latest, live, or representative of today's market.
   Do not infer the product price capture date solely from comment dates.
-- Preserve parsed `Price` as `price_raw`; perform no rial/toman conversion in the core cleaning
-  pipeline. The authoritative currency remains unknown.
-- Record a **provisional** currency inference of IRR/rial in the manifest, explicitly marked
-  `pending_validation`. Validate it against 20–30 recognizable products spanning categories and
-  price quantiles before seeking approval.
-- Only after separate human approval of that validation may a downstream schema version expose
-  `price_toman = price_raw / 10`. It must retain `price_raw` unchanged. Version 1 does not emit
-  `price_toman`.
+- Preserve parsed `Price` as `price_raw`. Human plausibility review strongly supports IRR/rial as
+  the raw unit, although source metadata has not authoritatively confirmed it.
+- Record `currency_status="IRR_inferred"` in the run manifest and audit.
+- Emit `price_toman = price_raw / 10` for display and analysis while retaining `price_raw`
+  unchanged. Never present `price_toman` as a current market price.
 - Do not apply inflation adjustment in the core cleaning pipeline. Any future inflation-adjusted
   price must be a separate, explicitly estimated feature and must never be presented as a real
   current market price.
+- `comments.created_at` is a date-only Jalali/Solar Hijri field in the validated source format
+  `D <Persian Jalali month name> YYYY`. All 6,156,289 observed values matched and were valid.
+- Preserve the exact text as `created_at_raw`, emit canonical numeric Jalali `YYYY-MM-DD` as
+  `created_at_jalali`, and convert explicitly to date-only `created_at_gregorian`.
+- Use a tested Jalali conversion implementation with known anchors and round-trip tests. Do not use
+  ambiguous pandas automatic date parsing.
+- Assign no timezone because the source has no time-of-day or timezone. The observed comment range
+  is `1395-04-23` / `2016-07-13` through `1402-07-26` / `2023-10-18`.
+- Never infer the dataset snapshot date or product/offer capture date from the maximum comment date.
+
+### 2.3 Category-quality policy
+
+Observed `sub_category` assignments include semantically surprising products. Preserve
+`Category1`, `Category2`, and `sub_category` unchanged except for the general blank-to-null rule.
+Do not silently reclassify products and do not treat `sub_category` alone as authoritative semantic
+ground truth. Any future category correction must be a separate, documented, versioned enrichment
+step that retains the source category values.
 
 ## 3. Planned outputs
 
@@ -136,7 +150,8 @@ seller or price is not a duplicate and is not inherently an error.
 | `offer_id` | string | no | Deterministic SHA-256 of the length-prefixed raw offer tuple |
 | `product_id` | int64 | no | Strictly parsed raw `products.id` |
 | `seller` | string | yes | Raw `Seller`; whitespace-only becomes null |
-| `price_raw` | decimal/int64 | yes | Parsed raw `Price`; authoritative currency unknown |
+| `price_raw` | decimal/int64 | yes | Parsed raw `Price`; operationally inferred IRR and always retained |
+| `price_toman` | decimal/float64 | yes | Derived `price_raw / 10` for display and analysis |
 | `is_fake` | boolean | yes | Strictly parsed raw `Is_Fake` |
 | `min_price_last_month` | decimal/int64 | yes | Zero becomes null because history is unavailable |
 | `missing_price_history` | boolean | no | True when raw `min_price_last_month=0` |
@@ -145,7 +160,7 @@ seller or price is not a duplicate and is not inherently an error.
 | `source_row_number` | int64 | no | First raw row representing the exact offer tuple |
 
 No timestamp identifies the current offer. `offers_clean` must not label any price as current,
-latest, expired, or preferred. Version 1 does not emit `price_toman` or an inflation-adjusted price.
+latest, expired, or preferred. Version 1 does not emit an inflation-adjusted price.
 
 ### 4.3 `comments_clean`
 
@@ -157,7 +172,9 @@ One canonical row per `comment_id` after exact full-row deduplication and confli
 | `product_id` | int64 | no | Foreign key to `products_clean.product_id` |
 | `title` | string | yes | Optional comment title |
 | `body` | string | yes | Primary review text; retained even when title is missing |
-| `created_at_raw` | string | no | Original date text pending calendar/format verification |
+| `created_at_raw` | string | no | Exact source Jalali date text |
+| `created_at_jalali` | string | no | Canonical numeric Jalali date `YYYY-MM-DD` |
+| `created_at_gregorian` | date32/date | no | Converted Gregorian date-only value |
 | `rate` | float64 | yes | Valid recorded rating in the inclusive 1–5 range |
 | `is_unrated` | boolean | no | True when raw rate is exactly zero |
 | `invalid_rate` | boolean | no | True when a non-null raw rate is outside 1–5 and not zero |
@@ -186,21 +203,24 @@ blank; that is not a cleaning-table deletion rule.
 |---|---|---|---|---|
 | products | `id` | products, offers | `product_id` | Strict signed-`int64` parse; quarantine invalid required ID |
 | products | `title_fa` | products | `title_fa` | Blank to null; preserve Persian text |
-| products | `Category1` | products | `category1` | Blank to null |
-| products | `Category2` | products | `category2` | Blank to null |
+| products | `Category1` | products | `category1` | Blank to null; otherwise preserve without reclassification |
+| products | `Category2` | products | `category2` | Blank to null; otherwise preserve without reclassification |
 | products | `Brand` | products | `brand` | Blank to null |
 | products | `Rate` | products | `rate` | Strict numeric parse and rating rules |
 | products | `Rate_cnt` | products | `rate_count` | Strict non-negative integer parse |
-| products | `sub_category` | products | `sub_category` | Blank to null |
+| products | `sub_category` | products | `sub_category` | Blank to null; preserve as non-authoritative source label |
 | products | `Seller` | offers | `seller` | Blank to null |
-| products | `Price` | offers | `price_raw` | Strict numeric parse; preserve without currency conversion |
+| products | `Price` | offers | `price_raw` | Strict numeric parse; retain original numeric value |
+| products | `Price` | offers | `price_toman` | Derive `price_raw / 10`; status is operational IRR inference |
 | products | `Is_Fake` | offers | `is_fake` | Accept only `True`/`False`; quarantine unrecognized values |
 | products | `min_price_last_month` | offers | `min_price_last_month` | Strict numeric parse; zero to null as unavailable history |
 | comments | `id` | comments | `comment_id` | Strict signed-`int64` parse; quarantine invalid required ID |
 | comments | `product_id` | comments | `product_id` | Strict signed-`int64` parse; quarantine invalid required ID |
 | comments | `title` | comments | `title` | Blank to null |
 | comments | `body` | comments | `body` | Blank to null; primary text field |
-| comments | `created_at` | comments | `created_at_raw` | Preserve text unchanged except surrounding whitespace |
+| comments | `created_at` | comments | `created_at_raw` | Preserve the exact source value |
+| comments | `created_at` | comments | `created_at_jalali` | Explicit month mapping to Jalali `YYYY-MM-DD` |
+| comments | `created_at` | comments | `created_at_gregorian` | Explicit tested Jalali conversion to date-only ISO/Parquet date |
 | comments | `rate` | comments | `rate` | Strict numeric parse; zero/out-of-range rules |
 | comments | `recommendation_status` | comments | `recommendation_status` | Blank to null; no inference from rate |
 | comments | `is_buyer` | comments | `is_buyer` | Accept only `True`/`False`; quarantine unrecognized values |
@@ -274,12 +294,13 @@ quarantine preservation does not make the clean-table action lossless.
 | PRD-005 | `Rate=0` and `Rate_cnt=0` | Set clean rate to null | `is_unrated=true` | Yes |
 | PRD-006 | `Rate=0` and `Rate_cnt>0` | Preserve zero; flag inconsistency; do not infer meaning | `inconsistent_zero_rate=true` | No |
 | PRD-007 | `Rate_cnt` is negative, fractional, or non-numeric | Quarantine candidate | Invalid rating-count audit | Yes |
+| PRD-008 | Source category appears semantically surprising | Preserve unchanged; do not reclassify or treat as authoritative truth | Category-quality note/count | No |
 | OFF-001 | Complete raw offer tuple repeats exactly | Keep first source occurrence only | `offers_exact_duplicates_removed` | Yes |
 | OFF-002 | Seller or price differs for same product | Preserve distinct offer | Offer multiplicity counts | No |
 | OFF-003 | `Price=0` | Retain offer, set `price_raw` to null | `invalid_price=true` | Yes |
 | OFF-004 | Price is negative or non-numeric | Exclude offer from clean table; quarantine raw row | Invalid-price quarantine count | Yes |
 | OFF-005 | Valid positive `price_raw` exceeds the global 99.9th percentile of valid positive prices | Retain unchanged; flag for review | `high_price_review=true`; threshold in audit/manifest | No |
-| OFF-006 | Any valid price | Preserve as `price_raw`; do not convert or label current/latest; authoritative currency remains unknown | Temporal/currency manifest policy | No |
+| OFF-006 | Any valid price | Preserve as `price_raw`; derive `price_toman=price_raw/10`; never label current/latest | `currency_status="IRR_inferred"` | No |
 | OFF-007 | `min_price_last_month=0` | Set history value to null; do not mark current price invalid | `missing_price_history=true` | Yes |
 | COM-001 | Entire comment raw row repeats | Keep first source occurrence; drop later occurrences | `comments_exact_full_row_duplicates_removed` | Yes |
 | COM-002 | Distinct rows share `comment_id` | Preserve all in conflict audit; apply canonical rule | `comment_id_conflict=true` | Yes |
@@ -290,7 +311,10 @@ quarantine preservation does not make the clean-table action lossless.
 | COM-007 | Rate is `2500` | Apply COM-006 explicitly | Invalid-rate audit includes raw `2500` | Yes |
 | COM-008 | Recommendation is present or missing | Preserve independently; never derive from rate | Recommendation distribution audit | No |
 | COM-009 | Body is missing | Retain comment; defer embedding eligibility to downstream text assembly | Missing-body count | No |
-| DATE-001 | Any `created_at` value | Preserve as `created_at_raw`; do not infer calendar, locale, timezone, or product capture date | Date-format audit pending | No |
+| DATE-001 | `created_at` matches `D <recognized Persian Jalali month> YYYY` | Preserve exact raw value and construct canonical Jalali `YYYY-MM-DD` | Date-format and range audit | No |
+| DATE-002 | Valid canonical Jalali date | Convert with an explicit tested Jalali algorithm to Gregorian date-only value | Conversion implementation/version in manifest | No |
+| DATE-003 | Date shape, month, or Jalali day is invalid in a future source | Quarantine row and preserve raw value; never use ambiguous automatic parsing | Invalid-date audit | Yes |
+| DATE-004 | Any source comment date | Assign no timezone and infer no product/offer capture date | Temporal-policy assertion | No |
 | JOIN-001 | Comment `product_id` exists in canonical products | Retain comment | Matched-comment count | No |
 | JOIN-002 | Comment `product_id` is null or absent from canonical products | Exclude from clean comments; quarantine and count | Orphan/missing-FK audit | Yes |
 
@@ -306,6 +330,8 @@ quarantine preservation does not make the clean-table action lossless.
 - `is_unrated=true` implies `rate is null` and raw `Rate=0, Rate_cnt=0` in provenance.
 - `inconsistent_zero_rate=true` implies clean `rate=0` and `rate_count>0`.
 - Every conflicting product ID has complete candidate coverage in `product_conflicts`.
+- Source category values are preserved without silent reclassification; `sub_category` is not
+  asserted to be authoritative semantic ground truth.
 - Output row count reconciles with distinct IDs after invalid-only groups and missing IDs are
   quarantined.
 
@@ -316,6 +342,7 @@ quarantine preservation does not make the clean-table action lossless.
   quarantined and counted rather than silently dropped.
 - Exact offer tuples are unique; distinct seller/price combinations remain.
 - `price_raw` is null or positive. Zero maps to null with `invalid_price=true`.
+- For non-null valid prices, `price_toman = price_raw / 10` exactly; `price_raw` remains unchanged.
 - Negative and non-numeric raw prices appear only in quarantine.
 - `high_price_review=true` exactly when a valid positive `price_raw` is greater than the global
   99.9th percentile threshold; it never causes removal. The threshold is recorded in both audit
@@ -323,7 +350,8 @@ quarantine preservation does not make the clean-table action lossless.
 - Raw `min_price_last_month=0` maps to null with `missing_price_history=true` and does not set
   `invalid_price`.
 - `is_fake` contains only parsed source `True`/`False`; unrecognized values are quarantined.
-- No column or documentation claims that an offer is current or that the currency is authoritative.
+- No column or documentation claims that an offer is current or that source metadata authoritatively
+  confirms the currency. Operational currency status is `IRR_inferred`.
 
 ### 8.3 `comments_clean`
 
@@ -339,7 +367,14 @@ quarantine preservation does not make the clean-table action lossless.
 - Missing optional fields do not reduce row counts.
 - Missing body does not remove a row from `comments_clean`.
 - `is_buyer` contains only parsed source `True`/`False`; unrecognized values are quarantined.
-- `created_at_raw` is preserved without calendar, locale, timezone, or capture-date inference.
+- `created_at_raw` exactly preserves the source text.
+- `created_at_jalali` matches `YYYY-MM-DD` and represents the same validated Jalali date.
+- `created_at_gregorian` is a date-only Parquet date and round-trips through the tested conversion.
+- The observed clean range is `1395-04-23` through `1402-07-26`, corresponding to `2016-07-13`
+  through `2023-10-18`. All 6,156,289 observed source values matched the approved format and were
+  valid in the completed diagnostic.
+- No timezone is assigned, because the source contains neither time-of-day nor timezone data.
+- Comment dates do not determine the dataset snapshot date or product/offer capture date.
 
 ### 8.4 Cross-output reconciliation
 
@@ -389,9 +424,8 @@ equation and separately report overlapping flags.
     }
   },
   "business_semantics": {
-    "authoritative_price_currency": "unknown",
-    "provisional_currency_inference": "IRR",
-    "provisional_currency_status": "pending_validation",
+    "authoritative_source_currency_confirmation": "unresolved",
+    "currency_status": "IRR_inferred",
     "offer_recency": "unknown",
     "dataset_age": "approximately two years old"
   },
@@ -406,9 +440,10 @@ atomically finalized and every acceptance validation passes. Failed runs must no
 files as final outputs.
 
 `run_manifest.json` must repeat the calculated high-price threshold and nearest-rank parameters,
-record the pinned `pyarrow` version, declare authoritative currency `unknown`, record provisional
-currency inference `IRR` with status `pending_validation`, state that offer recency is unknown, and
-carry nullable fields for exact dataset snapshot date and product price capture date.
+record the pinned `pyarrow` version, set `currency_status="IRR_inferred"`, state that authoritative
+source confirmation and offer recency remain unresolved, and carry nullable fields for exact
+dataset snapshot date and product price capture date. It must also record the Jalali conversion
+implementation/version, its test-vector version, and the observed comment-date range.
 
 ## 10. Streaming and reproducibility design constraints
 
@@ -454,19 +489,24 @@ carry nullable fields for exact dataset snapshot date and product price capture 
 12. `pytest -q`, `ruff check .`, and `git diff --check` pass before release.
 13. All cleaned and quarantine tables are readable by the pinned `pyarrow`; schemas match Section 4.
 14. The audit and manifest contain the calculated global 99.9th-percentile price threshold,
-    provisional IRR inference, authoritative unknown-currency status, and temporal policy.
-15. No output exposes `price_toman`, inflation-adjusted price, current price, or latest offer in
-    version 1.
+    `currency_status="IRR_inferred"`, unresolved authoritative source confirmation, and temporal
+    policy.
+15. `price_toman` equals `price_raw / 10`, raw prices remain present, and no output exposes an
+    inflation-adjusted price, current price, or latest offer.
+16. Tests cover every Persian Jalali month, month-specific day bounds including leap Esfand,
+    approved known conversion anchors, and Jalali/Gregorian round trips. Automatic pandas date
+    inference is prohibited.
+17. The implementation preserves category labels unchanged and treats future corrections as a
+    separate versioned enrichment output.
 
 ## 12. Remaining unresolved questions
 
 The following questions remain unresolved; all other policy choices previously listed for approval
 are now approved in this specification.
 
-1. **Authoritative price currency:** The provisional inference is IRR/rial, but it remains pending
-   validation against 20–30 recognizable products across categories and price quantiles. Until a
-   human approves that evidence, the authoritative currency is `unknown`, no rial/toman conversion
-   is performed, and `price_toman` is not emitted.
+1. **Authoritative source confirmation of currency:** Human plausibility review strongly supports
+   IRR/rial and the operational status is `IRR_inferred`, but source metadata has not authoritatively
+   confirmed the unit. Preserve `price_raw` regardless of future confirmation.
 2. **Exact dataset snapshot date:** The dataset is treated as approximately two years old, but its
    authoritative snapshot date is unknown and must be supplied as metadata.
 3. **Product price capture date:** The capture date for product and offer prices is unknown. It must
@@ -474,8 +514,6 @@ are now approved in this specification.
 4. **Offer temporal semantics:** It is unknown whether product rows represent concurrent offers,
    historical snapshots, or another collection process. Regardless of the answer, version 1 never
    labels them current or latest.
-5. **Comment date semantics:** Calendar, locale, timezone, and parseable format variants for
-   `created_at` remain pending a separate bounded format diagnostic. Preserve `created_at_raw`.
-6. **Price-history metadata:** Although zero `min_price_last_month` is now defined as unavailable,
+5. **Price-history metadata:** Although zero `min_price_last_month` is now defined as unavailable,
    the field's precise lookback window, capture method, and currency relationship to `Price` remain
    unverified.
