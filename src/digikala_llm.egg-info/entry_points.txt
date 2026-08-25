@@ -1,2 +1,0 @@
-[console_scripts]
-digikala-eda = digikala_llm.eda:main
