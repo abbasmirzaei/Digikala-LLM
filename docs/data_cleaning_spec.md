@@ -1,5 +1,7 @@
 # Phase 1 Data-Cleaning Specification
 
+**Specification version:** 1.0.3
+
 ## 1. Purpose and scope
 
 This document specifies a future, reproducible cleaning pipeline for the Digikala product,
@@ -158,7 +160,7 @@ seller or price is not a duplicate and is not inherently an error.
 | `min_price_last_month` | decimal/int64 | yes | Zero becomes null because history is unavailable |
 | `missing_price_history` | boolean | no | True when raw `min_price_last_month=0` |
 | `invalid_price` | boolean | no | True for a raw zero price retained as null |
-| `high_price_review` | boolean | no | `price_raw` exceeds the global valid-positive 99.9th percentile |
+| `high_price_review` | boolean | no | True only when `price_raw` is strictly greater than the global p99.9 threshold defined in Section 7 |
 | `source_row_number` | int64 | no | First raw row representing the exact offer tuple |
 
 No timestamp identifies the current offer. `offers_clean` must not label any price as current,
@@ -301,10 +303,11 @@ quarantine preservation does not make the clean-table action lossless.
 | OFF-002 | Seller or price differs for same product | Preserve distinct offer | Offer multiplicity counts | No |
 | OFF-003 | `Price=0` | Retain offer, set `price_raw` to null | `invalid_price=true` | Yes |
 | OFF-004 | Price is negative or non-numeric | Exclude offer from clean table; quarantine raw row | Invalid-price quarantine count | Yes |
-| OFF-005 | Valid positive `price_raw` exceeds the global 99.9th percentile of valid positive prices | Retain unchanged; flag for review | `high_price_review=true`; threshold in audit/manifest | No |
+| OFF-005 | In the post-OFF-009 final distinct-offer population, valid positive `price_raw` is strictly greater than the nearest-rank p99.9 threshold | Retain unchanged; flag for review; equality with the threshold is not flagged | `high_price_review=true`; population, rank, and threshold in audit/manifest | No |
 | OFF-006 | Any valid price | Preserve as `price_raw`; derive `price_toman=price_raw/10`; never label current/latest | `currency_status="IRR_inferred"` | No |
 | OFF-007 | `min_price_last_month=0` | Set history value to null; do not mark current price invalid | `missing_price_history=true` | Yes |
 | OFF-008 | Non-missing `min_price_last_month` is negative, fractional, non-numeric, or exceeds signed `int64` | Exclude offer from clean table; quarantine raw row | Invalid-price-history quarantine count | Yes |
+| OFF-009 | An otherwise valid offer candidate has no valid canonical product for its `product_id` after product aggregation | Exclude it from `offers_clean`; write it to offer quarantine with raw values and source-row traceability so `offers_clean` preserves referential integrity with `products_clean` | Offer quarantine count; row-level quarantine record | Yes |
 | COM-001 | Entire comment raw row repeats | Keep first source occurrence; drop later occurrences | `comments_exact_full_row_duplicates_removed` | Yes |
 | COM-002 | Distinct rows share `comment_id` | Preserve all in conflict audit; apply canonical rule | `comment_id_conflict=true` | Yes |
 | COM-003 | Optional comment fields are missing | Retain comment | Missing counts per column | No |
@@ -346,14 +349,19 @@ quarantine preservation does not make the clean-table action lossless.
 
 - Every `offer_id` is non-null and unique.
 - Every `product_id` matches a `products_clean.product_id`; offers for omitted products are
-  quarantined and counted rather than silently dropped.
+  quarantined under OFF-009 and counted rather than silently dropped. Each OFF-009 record retains
+  the raw evidence and source row needed for traceability.
 - Exact offer tuples are unique; distinct seller/price combinations remain.
 - `price_raw` is null or positive. Zero maps to null with `invalid_price=true`.
 - For non-null valid prices, `price_toman = price_raw / 10` exactly; `price_raw` remains unchanged.
 - Negative and non-numeric raw prices appear only in quarantine.
-- `high_price_review=true` exactly when a valid positive `price_raw` is greater than the global
-  99.9th percentile threshold; it never causes removal. The threshold is recorded in both audit
-  and manifest.
+- The high-price population is the final accepted distinct offers after exact offer deduplication
+  and removal of OFF-009 offers without a valid canonical product, restricted to valid positive
+  `price_raw` values.
+- Sort that population's prices ascending and select one-based rank `ceil(0.999 * N)` as the p99.9
+  threshold. `high_price_review=true` exactly when `price_raw > threshold`; a value equal to the
+  threshold is not flagged. Review status never causes removal. The population size, rank, method,
+  and threshold are recorded in both audit and manifest.
 - Raw `min_price_last_month=0` maps to null with `missing_price_history=true` and does not set
   `invalid_price`.
 - `is_fake` contains only parsed source `True`/`False`; unrecognized values are quarantined.
@@ -394,70 +402,78 @@ quarantine preservation does not make the clean-table action lossless.
 
 For each source, the audit must provide equations that reconcile raw rows to clean and quarantine
 outcomes. Because categories can overlap, both exclusive disposition counts and non-exclusive rule
-event counts are required. At minimum:
+event counts are required. For milestone-2 product/offer processing, these exact equations apply:
 
 ```text
-raw rows = exact-duplicate rows removed
-         + clean canonical/offer/comment rows
-         + exclusively quarantined rows
-         + noncanonical conflicting rows preserved in conflict audit
+input_rows
+  = exact_duplicate_rows_removed + distinct_raw_rows_retained
+
+distinct_raw_rows_retained
+  = accepted_product_candidates + product_quarantine_rows
+
+distinct_raw_rows_retained
+  = accepted_offer_candidates + offer_transform_quarantine_rows
+
+accepted_offer_candidates
+  = distinct_offer_candidates + exact_offer_duplicates_removed
+
+distinct_offer_candidates
+  = distinct_offer_count + offers_without_canonical_product
 ```
 
-The implementation must define the exact mutually exclusive disposition ordering used by this
-equation and separately report overlapping flags.
+`offers_without_canonical_product` is the OFF-009 count. Product canonicalization and conflict
+alternative counts are reported separately because multiple accepted product candidates can map
+to one canonical product and conflict alternatives do not form an additional raw-row disposition.
+The audit must record whether every equation passed and separately report overlapping rule flags.
 
 ## 9. Machine-readable audit contract
 
-`cleaning_audit.json` must be UTF-8 JSON with sorted keys and this top-level structure:
+`cleaning_audit.json` must be UTF-8 JSON with sorted keys. The milestone-2 product/offer run uses
+this top-level structure; later comment processing may extend it without changing these fields:
 
 ```json
 {
-  "spec_version": "1.0.2",
-  "run_id": "deterministic hash of inputs, configuration, and code version",
-  "sources": {},
-  "products_clean": {
-    "before_rows": 0,
-    "after_rows": 0,
-    "rule_event_counts": {},
-    "exclusive_disposition_counts": {},
-    "conflict_counts": {},
-    "validation_failures": []
+  "specification_version": "1.0.3",
+  "status": "success",
+  "source": {},
+  "configuration": {},
+  "rows": {},
+  "quarantine_counts_by_rule": {
+    "products": {},
+    "offers": {}
   },
-  "offers_clean": {},
-  "comments_clean": {},
-  "join": {
-    "matched_comments": 0,
-    "missing_product_id_comments": 0,
-    "orphan_comments": 0
+  "aggregate_transformations": {},
+  "rule_event_counts": {},
+  "price_review": {
+    "population": "final accepted distinct offers with valid positive price_raw",
+    "valid_positive_price_population": 0,
+    "method": "nearest-rank ceil(0.999 * N), flag strictly greater",
+    "rank": null,
+    "threshold": null,
+    "currency_status": "IRR_inferred"
   },
-  "quarantine_outputs": {},
-  "thresholds": {
-    "high_price_review": {
-      "definition": "global p99.9 of valid positive price_raw",
-      "calculated_value": null
-    }
-  },
-  "business_semantics": {
-    "authoritative_source_currency_confirmation": "unresolved",
-    "currency_status": "IRR_inferred",
-    "offer_recency": "unknown",
-    "dataset_age": "approximately two years old"
-  },
-  "unresolved_assumptions": [],
-  "status": "success or failed"
+  "offer_id_semantics": "technical deterministic fingerprint, not a business identifier",
+  "deterministic_sort_keys": {},
+  "reconciliation": {},
+  "outputs": {}
 }
 ```
 
-Each rule in Section 7 must have a counter, including zero-valued counters. Each output entry must
-include its row count and SHA-256 checksum. A run is successful only after all output files are
-atomically finalized and every acceptance validation passes. Failed runs must not publish partial
-files as final outputs.
+Each rule in Section 7 must have a counter, including zero-valued counters. Product and offer
+quarantine counts must be grouped by rule, including OFF-009, and row-level OFF-009 records must
+retain source traceability. Each output entry must include its row count and SHA-256 checksum. The
+audit must include the milestone-2 reconciliation equations and their pass/fail results. A run is
+successful only after all output files are atomically finalized and every acceptance validation
+passes. Failed runs must not publish partial files as final outputs.
 
-`run_manifest.json` must repeat the calculated high-price threshold and nearest-rank parameters,
-record the pinned `pyarrow` version, set `currency_status="IRR_inferred"`, state that authoritative
-source confirmation and offer recency remain unresolved, and carry nullable fields for exact
-dataset snapshot date and product price capture date. It must also record the Jalali conversion
-implementation/version, its test-vector version, and the observed comment-date range.
+`run_manifest.json` must record `specification_version="1.0.3"`, `status`, deterministic `run_id`,
+source provenance, configuration, output row counts and checksums, dependency versions,
+`offer_recency="unknown"`, and `currency_status="IRR_inferred"`. Its `price_review` object must
+repeat the high-price population definition, population size, one-based nearest rank, calculated
+threshold, and strict-greater-than flag policy. The future combined pipeline must additionally
+carry nullable exact dataset snapshot and product price capture dates and record the Jalali
+conversion implementation/version, test-vector version, and observed comment-date range when
+comments processing is implemented.
 
 ## 10. Streaming and reproducibility design constraints
 
@@ -476,10 +492,11 @@ implementation/version, its test-vector version, and the observed comment-date r
 - Pin and record parsing/writer versions, null conventions, decimal behavior, boolean vocabulary,
   and the rule-set version.
 - Use a pinned `pyarrow` version for all Parquet outputs and record it in the manifest.
-- Calculate the high-price threshold globally from all valid positive `price_raw` values before
-  final offer publication. Define p99.9 by the nearest-rank method: after sorting `N` valid positive
-  prices ascending, select rank `ceil(0.999 × N)` using one-based ranks. Flag values strictly
-  greater than that threshold. Record `N`, rank, algorithm, and calculated threshold.
+- Calculate the high-price threshold before final offer publication from valid positive
+  `price_raw` values in final accepted distinct offers after exact offer deduplication and OFF-009
+  removal. Sort the `N` values ascending and select one-based rank `ceil(0.999 * N)`. Flag only
+  values strictly greater than the selected threshold; equality is not flagged. Record the
+  population definition, `N`, rank, algorithm, and calculated threshold.
 - Write to run-scoped temporary paths and atomically rename only after validation succeeds.
 - On exceptions, close temporary databases/files and mark the audit failed. Never report success
   after incomplete processing.
@@ -520,6 +537,16 @@ implementation/version, its test-vector version, and the observed comment-date r
     zeros, and Unicode; it is never interpreted as a numeric identifier. Exact lowercase `nan` in
     both seller columns converts to null with per-column aggregate counts, while uppercase `NAN`
     and all other nonblank codes remain unchanged.
+19. Every row in `offers_clean` references a valid canonical `products_clean.product_id`.
+    Otherwise-valid offers without one are excluded under OFF-009, preserved in offer quarantine
+    with raw/source traceability, and included in reconciliation counts.
+20. The p99.9 population contains exactly the final accepted distinct offers after exact offer
+    deduplication and OFF-009 removal that have valid positive `price_raw`. The threshold equals
+    the value at one-based rank `ceil(0.999 * N)` after ascending sort, and tests prove that values
+    equal to the threshold are not flagged while greater values are flagged without removal.
+21. The audit and manifest record specification version 1.0.3, the high-price population, `N`,
+    rank, method, threshold, and strict comparison policy; all milestone-2 reconciliation equations
+    pass before the completion marker is written.
 
 ## 12. Remaining unresolved questions
 

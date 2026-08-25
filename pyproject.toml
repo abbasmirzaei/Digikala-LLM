@@ -23,6 +23,7 @@ dev = [
 
 [project.scripts]
 digikala-eda = "digikala_llm.eda:main"
+digikala-clean-products = "digikala_llm.products_pipeline:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

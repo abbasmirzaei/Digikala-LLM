@@ -145,6 +145,27 @@ ROW_AUDIT_SCHEMA = pa.schema(
     ]
 )
 
+PRODUCT_CONFLICT_SCHEMA = pa.schema(
+    [
+        pa.field("product_id", pa.int64(), nullable=False),
+        pa.field("title_fa", pa.string()),
+        pa.field("category1", pa.string()),
+        pa.field("category2", pa.string()),
+        pa.field("brand", pa.string()),
+        pa.field("rate", pa.float64()),
+        pa.field("rate_count", pa.int64()),
+        pa.field("sub_category", pa.string()),
+        pa.field("is_unrated", pa.bool_(), nullable=False),
+        pa.field("inconsistent_zero_rate", pa.bool_(), nullable=False),
+        pa.field("candidate_source_row_number", pa.int64(), nullable=False),
+        pa.field("canonical_source_row_number", pa.int64(), nullable=False),
+        pa.field("core_completeness", pa.int64(), nullable=False),
+        pa.field("core_digest", pa.string(), nullable=False),
+        pa.field("raw_core_json", pa.string(), nullable=False),
+        pa.field("selected_as_canonical", pa.bool_(), nullable=False),
+    ]
+)
+
 T = TypeVar("T")
 
 
