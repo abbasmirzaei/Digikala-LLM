@@ -12,9 +12,10 @@ import sqlite3
 import tempfile
 from collections import Counter
 from collections.abc import Iterable
+from contextlib import ExitStack
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 import pandas as pd
 
@@ -68,7 +69,9 @@ class DiskUniqueIndex:
             "INSERT OR IGNORE INTO identifiers(value) VALUES (?)",
             ((value,) for value in values),
         )
-        return len(values) - (self.connection.total_changes - before)
+        duplicate_count = len(values) - (self.connection.total_changes - before)
+        self.connection.commit()
+        return duplicate_count
 
     def duplicated_unique_count(self) -> int:
         row = self.connection.execute("SELECT COUNT(*) FROM duplicated_values").fetchone()
@@ -77,6 +80,12 @@ class DiskUniqueIndex:
     def close(self) -> None:
         self.connection.close()
         self.path.unlink(missing_ok=True)
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
 
 
 class ProductVariationIndex:
@@ -104,6 +113,7 @@ class ProductVariationIndex:
             core_facts = _fingerprint_values(row.get(name) for name in core_columns)
             rows.append((product_id, seller, price, core_facts))
         self.connection.executemany("INSERT INTO offers VALUES (?, ?, ?, ?)", rows)
+        self.connection.commit()
 
     def summary(self, exact_duplicate_offers: int) -> dict[str, Any]:
         def varying_ids(column: str) -> int:
@@ -126,6 +136,17 @@ class ProductVariationIndex:
     def close(self) -> None:
         self.connection.close()
         self.path.unlink(missing_ok=True)
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
+
+def _progress(enabled: bool, message: str) -> None:
+    if enabled:
+        print(f"[EDA] {message}", flush=True)
 
 
 def detect_format(path: Path) -> tuple[str, str]:
@@ -236,7 +257,12 @@ def _infer_dataset_type(path: Path, columns: Iterable[str]) -> str:
     return "generic"
 
 
-def _csv_chunks(path: Path, chunksize: int, usecols: list[str] | None = None) -> Iterable[pd.DataFrame]:
+def _csv_chunks(
+    path: Path,
+    chunksize: int,
+    usecols: list[str] | None = None,
+    max_rows: int | None = None,
+) -> Iterable[pd.DataFrame]:
     encoding, delimiter = detect_format(path)
     return pd.read_csv(
         path,
@@ -245,21 +271,29 @@ def _csv_chunks(path: Path, chunksize: int, usecols: list[str] | None = None) ->
         dtype=str,
         usecols=usecols,
         chunksize=chunksize,
+        nrows=max_rows,
         keep_default_na=True,
     )
 
 
-def _outside_range_count(path: Path, column: str, low: float, high: float, chunksize: int) -> int:
+def _outside_range_count(
+    path: Path,
+    column: str,
+    low: float,
+    high: float,
+    chunksize: int,
+    max_rows: int | None,
+) -> int:
     count = 0
-    for chunk in _csv_chunks(path, chunksize, [column]):
+    for chunk in _csv_chunks(path, chunksize, [column], max_rows):
         values = pd.to_numeric(chunk[column], errors="coerce")
         count += int(((values < low) | (values > high)).sum())
     return count
 
 
-def _price_validation(path: Path, chunksize: int) -> dict[str, int]:
+def _price_validation(path: Path, chunksize: int, max_rows: int | None) -> dict[str, int]:
     result = {"missing_count": 0, "zero_count": 0, "negative_count": 0, "non_numeric_count": 0}
-    for chunk in _csv_chunks(path, chunksize, ["Price"]):
+    for chunk in _csv_chunks(path, chunksize, ["Price"], max_rows):
         source = chunk["Price"]
         result["missing_count"] += int(source.isna().sum())
         present = source.dropna().astype(str).str.strip()
@@ -272,52 +306,68 @@ def _price_validation(path: Path, chunksize: int) -> dict[str, int]:
     return result
 
 
-def profile_dataset(path: Path, chunksize: int = 100_000) -> dict[str, Any]:
+def profile_dataset(
+    path: Path,
+    chunksize: int = 100_000,
+    *,
+    max_rows: int | None = None,
+    progress: bool = False,
+) -> dict[str, Any]:
     """Profile a CSV incrementally; no DataFrame larger than ``chunksize`` is created."""
     if chunksize <= 0:
         raise ValueError("chunksize must be greater than zero")
+    if max_rows is not None and max_rows <= 0:
+        raise ValueError("max_rows must be greater than zero")
+    _progress(progress, f"{path.name}: detecting encoding and delimiter")
     encoding, delimiter = detect_format(path)
+    _progress(progress, f"{path.name}: format detected ({encoding=}, {delimiter=})")
     rows = 0
     column_names: list[str] = []
     accumulators: dict[str, ColumnAccumulator] = {}
     dataset_type = "generic"
     seen_ids: set[str] = set()
-    id_index = DiskUniqueIndex()
-    row_index = DiskUniqueIndex()
-    product_variations: ProductVariationIndex | None = None
     duplicate_id_excess_rows = 0
     exact_full_row_duplicates = 0
     missing_ids = 0
-
-    for chunk in _csv_chunks(path, chunksize):
-        if not column_names:
-            column_names = [str(name) for name in chunk.columns]
-            dataset_type = _infer_dataset_type(path, column_names)
-            accumulators = {name: ColumnAccumulator() for name in column_names}
-            if dataset_type == "products":
-                product_variations = ProductVariationIndex()
-        rows += len(chunk)
-        exact_full_row_duplicates += row_index.add_many(_row_fingerprints(chunk))
-        if product_variations is not None:
-            product_variations.add_chunk(chunk)
-        for name in column_names:
-            accumulators[name].update(
-                chunk[name], keep_distribution=name.lower() in REQUIRED_DISTRIBUTIONS
-            )
-        if "id" in chunk.columns:
-            identifiers = [_normalise_id(value) for value in chunk["id"]]
-            missing_ids += sum(identifier is None for identifier in identifiers)
-            present_ids = [identifier for identifier in identifiers if identifier is not None]
-            duplicate_id_excess_rows += id_index.add_many(present_ids)
-            if dataset_type == "products":
-                seen_ids.update(present_ids)
-    duplicated_unique_ids = id_index.duplicated_unique_count()
-    id_index.close()
-    row_index.close()
     product_variation_summary = None
-    if product_variations is not None:
-        product_variation_summary = product_variations.summary(exact_full_row_duplicates)
-        product_variations.close()
+
+    _progress(progress, f"{path.name}: starting chunked primary scan")
+    with ExitStack() as stack:
+        id_index = stack.enter_context(DiskUniqueIndex())
+        row_index = stack.enter_context(DiskUniqueIndex())
+        product_variations: ProductVariationIndex | None = None
+        for chunk_number, chunk in enumerate(
+            _csv_chunks(path, chunksize, max_rows=max_rows), start=1
+        ):
+            if not column_names:
+                column_names = [str(name) for name in chunk.columns]
+                dataset_type = _infer_dataset_type(path, column_names)
+                accumulators = {name: ColumnAccumulator() for name in column_names}
+                if dataset_type == "products":
+                    product_variations = stack.enter_context(ProductVariationIndex())
+                _progress(progress, f"{path.name}: initialized {dataset_type} accumulators")
+            rows += len(chunk)
+            exact_full_row_duplicates += row_index.add_many(_row_fingerprints(chunk))
+            if product_variations is not None:
+                product_variations.add_chunk(chunk)
+            for name in column_names:
+                accumulators[name].update(
+                    chunk[name], keep_distribution=name.lower() in REQUIRED_DISTRIBUTIONS
+                )
+            if "id" in chunk.columns:
+                identifiers = [_normalise_id(value) for value in chunk["id"]]
+                missing_ids += sum(identifier is None for identifier in identifiers)
+                present_ids = [identifier for identifier in identifiers if identifier is not None]
+                duplicate_id_excess_rows += id_index.add_many(present_ids)
+                if dataset_type == "products":
+                    seen_ids.update(present_ids)
+            if chunk_number == 1 or chunk_number % 10 == 0:
+                _progress(progress, f"{path.name}: primary scan reached {rows:,} rows")
+        duplicated_unique_ids = id_index.duplicated_unique_count()
+        if product_variations is not None:
+            _progress(progress, f"{path.name}: summarizing product offer variation")
+            product_variation_summary = product_variations.summary(exact_full_row_duplicates)
+    _progress(progress, f"{path.name}: primary scan complete ({rows:,} rows); temp indexes removed")
     columns: list[dict[str, Any]] = []
     numeric_statistics: dict[str, dict[str, float | None]] = {}
     top_value_counts: dict[str, dict[str, int]] = {}
@@ -359,24 +409,35 @@ def profile_dataset(path: Path, chunksize: int = 100_000) -> dict[str, Any]:
     if dataset_type == "products":
         validation["product_offer_variation"] = product_variation_summary
         if "Rate" in accumulators:
+            _progress(progress, f"{path.name}: starting Rate range validation")
             validation["Rate"] = {
                 "distribution": _distribution(accumulators["Rate"].values),
-                "outside_0_100_count": _outside_range_count(path, "Rate", 0, 100, chunksize),
+                "outside_0_100_count": _outside_range_count(
+                    path, "Rate", 0, 100, chunksize, max_rows
+                ),
             }
+            _progress(progress, f"{path.name}: Rate range validation complete")
         if "Price" in accumulators:
-            validation["Price"] = _price_validation(path, chunksize)
+            _progress(progress, f"{path.name}: starting Price validation")
+            validation["Price"] = _price_validation(path, chunksize, max_rows)
+            _progress(progress, f"{path.name}: Price validation complete")
     elif dataset_type == "comments":
         if "product_id" in accumulators:
             validation["missing_product_id"] = accumulators["product_id"].missing
         if "rate" in accumulators:
+            _progress(progress, f"{path.name}: starting rate range validation")
             validation["rate"] = {
                 "distribution": _distribution(accumulators["rate"].values),
-                "outside_0_5_count": _outside_range_count(path, "rate", 0, 5, chunksize),
+                "outside_0_5_count": _outside_range_count(
+                    path, "rate", 0, 5, chunksize, max_rows
+                ),
             }
+            _progress(progress, f"{path.name}: rate range validation complete")
         for name in ("recommendation_status", "is_buyer"):
             if name in accumulators:
                 validation[name] = {"distribution": _distribution(accumulators[name].values)}
 
+    _progress(progress, f"{path.name}: profile complete")
     return {
         "source_file": str(path),
         "dataset_type": dataset_type,
@@ -394,17 +455,23 @@ def profile_dataset(path: Path, chunksize: int = 100_000) -> dict[str, Any]:
 
 
 def _join_validation(
-    comments_path: Path, product_ids: set[str], chunksize: int
+    comments_path: Path,
+    product_ids: set[str],
+    chunksize: int,
+    max_rows: int | None,
+    progress: bool,
 ) -> dict[str, Any]:
+    _progress(progress, f"{comments_path.name}: starting product join validation")
     orphan_comment_count = 0
     orphan_sample: set[str] = set()
-    for chunk in _csv_chunks(comments_path, chunksize, ["product_id"]):
+    for chunk in _csv_chunks(comments_path, chunksize, ["product_id"], max_rows):
         for value in chunk["product_id"]:
             identifier = _normalise_id(value)
             if identifier is not None and identifier not in product_ids:
                 orphan_comment_count += 1
                 if len(orphan_sample) < 20:
                     orphan_sample.add(identifier)
+    _progress(progress, f"{comments_path.name}: product join validation complete")
     return {
         "relationship": "products.id <- comments.product_id",
         "orphan_comment_count": orphan_comment_count,
@@ -412,19 +479,36 @@ def _join_validation(
     }
 
 
-def profile_datasets(paths: list[Path], chunksize: int = 100_000) -> dict[str, Any]:
+def profile_datasets(
+    paths: list[Path],
+    chunksize: int = 100_000,
+    *,
+    max_rows: int | None = None,
+    progress: bool = False,
+) -> dict[str, Any]:
     """Profile datasets and validate the intended product/comment join when both exist."""
-    reports = [profile_dataset(path, chunksize) for path in paths]
+    reports = [
+        profile_dataset(path, chunksize, max_rows=max_rows, progress=progress) for path in paths
+    ]
     products = next((report for report in reports if report["dataset_type"] == "products"), None)
     comments = next((report for report in reports if report["dataset_type"] == "comments"), None)
     join_validation: dict[str, Any] | None = None
     if products is not None and comments is not None:
         join_validation = _join_validation(
-            Path(comments["source_file"]), products["_ids"], chunksize
+            Path(comments["source_file"]),
+            products["_ids"],
+            chunksize,
+            max_rows,
+            progress,
         )
     for report in reports:
         report.pop("_ids")
-    return {"chunksize": chunksize, "datasets": reports, "join_validation": join_validation}
+    return {
+        "chunksize": chunksize,
+        "max_rows": max_rows,
+        "datasets": reports,
+        "join_validation": join_validation,
+    }
 
 
 def to_markdown(report: dict[str, Any]) -> str:
@@ -494,16 +578,33 @@ def main() -> None:
     parser.add_argument("dataset", type=Path, nargs="+", help="One or more CSV/TSV files")
     parser.add_argument("--output", type=Path, default=Path("reports/eda"))
     parser.add_argument("--chunksize", type=int, default=100_000)
+    parser.add_argument(
+        "--max-rows",
+        type=int,
+        help="Diagnostic row limit per dataset; omit for a complete profile",
+    )
     args = parser.parse_args()
     missing = [path for path in args.dataset if not path.is_file()]
     if missing:
         parser.error(f"Dataset not found: {missing[0]}")
     if args.chunksize <= 0:
         parser.error("--chunksize must be greater than zero")
-    report = profile_datasets(args.dataset, args.chunksize)
+    if args.max_rows is not None and args.max_rows <= 0:
+        parser.error("--max-rows must be greater than zero")
+    report = profile_datasets(
+        args.dataset,
+        args.chunksize,
+        max_rows=args.max_rows,
+        progress=True,
+    )
+    _progress(True, "writing JSON and Markdown reports")
     json_path, markdown_path = write_report(report, args.output)
-    print("; ".join(f"{item['dataset_type']}: {item['rows']:,} rows" for item in report["datasets"]))
-    print(f"Reports: {json_path}, {markdown_path}")
+    _progress(True, "report writing complete")
+    print(
+        "; ".join(f"{item['dataset_type']}: {item['rows']:,} rows" for item in report["datasets"]),
+        flush=True,
+    )
+    print(f"Reports: {json_path}, {markdown_path}", flush=True)
 
 
 if __name__ == "__main__":

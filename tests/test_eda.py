@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 
+import pytest
+
+from digikala_llm import eda
 from digikala_llm.eda import detect_format, profile_dataset, profile_datasets, write_report
 
 
@@ -110,3 +113,20 @@ def test_writes_json_and_markdown(tmp_path: Path) -> None:
 
     assert json.loads(json_path.read_text(encoding="utf-8"))["datasets"][0]["rows"] == 1
     assert "# Phase 1 EDA report" in markdown_path.read_text(encoding="utf-8")
+
+
+def test_temporary_indexes_are_removed_after_python_exception(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dataset = tmp_path / "products.csv"
+    dataset.write_text("id,Price\n1,10\n", encoding="utf-8")
+    before = set(Path("/tmp").glob("digikala-*.sqlite3"))
+
+    def fail_add_chunk(self: eda.ProductVariationIndex, chunk: object) -> None:
+        raise RuntimeError("diagnostic failure")
+
+    monkeypatch.setattr(eda.ProductVariationIndex, "add_chunk", fail_add_chunk)
+    with pytest.raises(RuntimeError, match="diagnostic failure"):
+        profile_dataset(dataset, chunksize=1)
+
+    assert set(Path("/tmp").glob("digikala-*.sqlite3")) == before
