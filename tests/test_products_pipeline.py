@@ -3,6 +3,7 @@ import hashlib
 import json
 from pathlib import Path
 
+import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
@@ -16,6 +17,7 @@ from digikala_llm.cleaning import (
 )
 from digikala_llm.products_pipeline import (
     COMPLETION_MARKER,
+    _iter_product_csv_batches,
     build_parser,
     run_products_pipeline,
 )
@@ -23,16 +25,16 @@ from digikala_llm.products_pipeline import (
 PRODUCT_COLUMNS = [
     "id",
     "title_fa",
+    "Rate",
+    "Rate_cnt",
     "Category1",
     "Category2",
     "Brand",
-    "Rate",
-    "Rate_cnt",
-    "sub_category",
-    "Seller",
     "Price",
+    "Seller",
     "Is_Fake",
     "min_price_last_month",
+    "sub_category",
 ]
 
 
@@ -308,3 +310,94 @@ def test_cli_parser_defaults_and_required_output() -> None:
     assert args.chunksize == 100_000
     assert args.max_rows is None
     assert not args.force
+
+
+def test_stdlib_ingest_preserves_exact_tokens_and_csv_features(tmp_path: Path) -> None:
+    source = tmp_path / "exact.csv"
+    rows = [
+        raw_product(title_fa="", Seller="nan", Brand="quoted, brand"),
+        raw_product(
+            id="2",
+            title_fa='escaped "quote" and\nembedded newline',
+            Seller="NAN",
+            Category2="",
+        ),
+    ]
+    write_products(source, rows)
+
+    batches = list(_iter_product_csv_batches(source, chunksize=1, max_rows=None))
+    assert [source_row for batch in batches for source_row, _ in batch] == [2, 3]
+    parsed = [raw for batch in batches for _, raw in batch]
+    assert parsed == rows
+    assert parsed[0]["title_fa"] == ""
+    assert parsed[0]["Seller"] == "nan"
+    assert parsed[0]["Brand"] == "quoted, brand"
+    assert parsed[1]["Seller"] == "NAN"
+    assert parsed[1]["title_fa"] == 'escaped "quote" and\nembedded newline'
+
+
+def test_stdlib_ingest_validates_exact_header(tmp_path: Path) -> None:
+    source = tmp_path / "wrong-header.csv"
+    with source.open("w", encoding="utf-8-sig", newline="") as destination:
+        writer = csv.writer(destination)
+        writer.writerow(list(reversed(PRODUCT_COLUMNS)))
+        writer.writerow(list(reversed(list(raw_product().values()))))
+    with pytest.raises(ValueError, match="header mismatch"):
+        list(_iter_product_csv_batches(source, chunksize=2, max_rows=None))
+
+
+@pytest.mark.parametrize(
+    ("values", "message"),
+    [
+        (["1"] * (len(PRODUCT_COLUMNS) - 1), "missing fields"),
+        (["1"] * (len(PRODUCT_COLUMNS) + 1), "extra fields"),
+    ],
+)
+def test_stdlib_ingest_rejects_malformed_field_counts(
+    tmp_path: Path, values: list[str], message: str
+) -> None:
+    source = tmp_path / f"{message}.csv"
+    with source.open("w", encoding="utf-8-sig", newline="") as destination:
+        writer = csv.writer(destination)
+        writer.writerow(PRODUCT_COLUMNS)
+        writer.writerow(values)
+    with pytest.raises(ValueError, match=message):
+        list(_iter_product_csv_batches(source, chunksize=2, max_rows=None))
+
+
+def test_stdlib_ingest_chunks_max_rows_and_logical_record_numbers(tmp_path: Path) -> None:
+    source = tmp_path / "chunks.csv"
+    rows = [raw_product(id=str(number)) for number in range(1, 7)]
+    rows[1]["title_fa"] = "record with\nmultiple physical lines"
+    write_products(source, rows)
+
+    batches = list(_iter_product_csv_batches(source, chunksize=2, max_rows=5))
+    assert [len(batch) for batch in batches] == [2, 2, 1]
+    assert [source_row for batch in batches for source_row, _ in batch] == [2, 3, 4, 5, 6]
+    assert [raw["id"] for batch in batches for _, raw in batch] == ["1", "2", "3", "4", "5"]
+
+
+def test_pipeline_raw_ingest_does_not_call_pandas_read_csv(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "products.csv"
+    output = tmp_path / "cleaned"
+    write_products(source, [raw_product(), raw_product()])
+
+    def fail(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("pandas.read_csv must not be used for product ingestion")
+
+    monkeypatch.setattr(pd, "read_csv", fail)
+    audit = run_products_pipeline(source, output, chunksize=1)
+    assert audit["rows"]["input_rows"] == 2
+    assert audit["rows"]["exact_duplicate_rows_removed"] == 1
+
+
+def test_stdlib_ingest_enforces_deliberate_field_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "oversized.csv"
+    write_products(source, [raw_product(title_fa="x" * 33)])
+    monkeypatch.setattr("digikala_llm.products_pipeline.CSV_FIELD_SIZE_LIMIT", 32)
+    with pytest.raises(ValueError, match="field larger than field limit"):
+        list(_iter_product_csv_batches(source, chunksize=1, max_rows=None))

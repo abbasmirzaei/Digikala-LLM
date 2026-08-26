@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import os
@@ -56,6 +57,22 @@ REQUIRED_PRODUCT_COLUMNS = {
     "Is_Fake",
     "min_price_last_month",
 }
+PRODUCT_SOURCE_COLUMNS = (
+    "id",
+    "title_fa",
+    "Rate",
+    "Rate_cnt",
+    "Category1",
+    "Category2",
+    "Brand",
+    "Price",
+    "Seller",
+    "Is_Fake",
+    "min_price_last_month",
+    "sub_category",
+)
+# Deliberately bounded well above observed fields; oversized records fail explicitly.
+CSV_FIELD_SIZE_LIMIT = 16 * 1024 * 1024
 OUTPUT_SCHEMAS = {
     "products_clean.parquet": PRODUCTS_CLEAN_SCHEMA,
     "offers_clean.parquet": OFFERS_CLEAN_SCHEMA,
@@ -309,6 +326,52 @@ def _count_result_events(
         rule_counts[record["rule_id"]] += 1
 
 
+def _iter_product_csv_batches(
+    input_path: Path,
+    chunksize: int,
+    max_rows: int | None,
+) -> Iterator[list[tuple[int, dict[str, str]]]]:
+    """Yield exact-token CSV records with logical, not physical-line, row numbers."""
+    csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
+    with input_path.open("r", encoding="utf-8-sig", newline="") as source:
+        reader = csv.DictReader(source, delimiter=",", restkey=None, restval=None)
+        expected = list(PRODUCT_SOURCE_COLUMNS)
+        if reader.fieldnames != expected:
+            raise ValueError(
+                f"products CSV header mismatch: expected {expected}, got {reader.fieldnames}"
+            )
+        batch: list[tuple[int, dict[str, str]]] = []
+        records_read = 0
+        while max_rows is None or records_read < max_rows:
+            try:
+                raw = next(reader)
+            except StopIteration:
+                break
+            except csv.Error as exc:
+                raise ValueError(
+                    f"malformed products CSV data record {records_read + 1}: {exc}"
+                ) from exc
+            source_row = records_read + 2
+            if None in raw:
+                raise ValueError(
+                    f"products CSV data record {records_read + 1} has extra fields: "
+                    f"{raw[None]!r}"
+                )
+            missing = [column for column in expected if raw[column] is None]
+            if missing:
+                raise ValueError(
+                    f"products CSV data record {records_read + 1} has missing fields: {missing}"
+                )
+            exact_raw = {column: raw[column] for column in expected}
+            batch.append((source_row, exact_raw))
+            records_read += 1
+            if len(batch) == chunksize:
+                yield batch
+                batch = []
+        if batch:
+            yield batch
+
+
 def _insert_product_candidate(
     connection: sqlite3.Connection,
     candidate: dict[str, Any],
@@ -391,26 +454,13 @@ def _ingest(
     rule_counts: Counter[str] = Counter({rule_id: 0 for rule_id in PRODUCT_OFFER_RULE_IDS})
     product_quarantine_rules: Counter[str] = Counter()
     offer_quarantine_rules: Counter[str] = Counter()
-    reader = pd.read_csv(
-        input_path,
-        encoding="utf-8-sig",
-        delimiter=",",
-        dtype=str,
-        keep_default_na=False,
-        na_filter=False,
-        chunksize=chunksize,
-        nrows=max_rows,
-    )
-    columns: list[str] | None = None
-    for chunk_number, chunk in enumerate(reader, start=1):
-        if columns is None:
-            columns = list(chunk.columns)
-            missing = REQUIRED_PRODUCT_COLUMNS - set(columns)
-            if missing:
-                raise ValueError(f"products CSV is missing columns: {sorted(missing)}")
-        for offset, values in enumerate(chunk.itertuples(index=False, name=None)):
-            source_row = metrics["input_rows"] + offset + 2
-            raw = dict(zip(columns, values, strict=True))
+    saw_rows = False
+    columns = list(PRODUCT_SOURCE_COLUMNS)
+    for chunk_number, batch in enumerate(
+        _iter_product_csv_batches(input_path, chunksize, max_rows), start=1
+    ):
+        saw_rows = True
+        for source_row, raw in batch:
             content = _raw_row_content(columns, raw)
             cursor = connection.execute(
                 "INSERT OR IGNORE INTO raw_rows VALUES (?, ?, ?)",
@@ -459,7 +509,7 @@ def _ingest(
                 else:
                     metrics["exact_offer_duplicates_removed"] += 1
                     rule_counts["OFF-001"] += 1
-        metrics["input_rows"] += len(chunk)
+        metrics["input_rows"] += len(batch)
         connection.commit()
         _progress(
             f"ingest chunk {chunk_number}: {metrics['input_rows']:,} input rows, "
@@ -467,7 +517,7 @@ def _ingest(
         )
         if failure_injector is not None:
             failure_injector("ingest_chunk")
-    if columns is None:
+    if not saw_rows:
         raise ValueError("products CSV has no rows")
     if metrics["input_rows"] != (
         metrics["exact_duplicate_rows_removed"] + metrics["distinct_raw_rows_retained"]
