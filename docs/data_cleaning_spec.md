@@ -1,6 +1,6 @@
 # Phase 1 Data-Cleaning Specification
 
-**Specification version:** 1.0.3
+**Specification version:** 1.0.6
 
 ## 1. Purpose and scope
 
@@ -28,6 +28,15 @@ The full EDA found important row semantics:
   unique IDs.
 - The full raw join found no comments whose `product_id` was absent from raw `products.id`.
   Nevertheless, future runs must enforce and audit this relationship.
+
+Version 1.0.4 changed comment semantics. Version 1.0.5 corrected the physical comment-rating
+contract: `rate` is an exact fixed-scale Decimal and remains text throughout SQLite, avoiding a
+binary-float round trip. A complete rate-token scan found maximum validated scale 2, so the explicit
+Parquet type is `decimal128(3,2)`. This is a material schema change and therefore advances the
+specification. Version 1.0.6 makes the observed two-decimal rating scale a deterministic validation
+rule: over-scale values are invalidated with row traceability rather than causing Arrow materialization
+to fail. The existing `products_v1` output produced under 1.0.3 remains valid and must not be
+regenerated; future product runs record 1.0.6 solely because it is the global specification version.
 
 ## 2. Non-negotiable principles
 
@@ -170,6 +179,15 @@ latest, expired, or preferred. Version 1 does not emit an inflation-adjusted pri
 
 One canonical row per `comment_id` after exact full-row deduplication and conflict handling.
 
+The full 6,156,289-row rating scan found 529,098 zero rates, 5,145 positive rates below 1,
+5,622,045 rates in 1–5, one rate above 5 (`2500`), and no negative/missing/non-numeric values.
+It also found 228,128 positive fractional ratings across 171 values. A complete lexical rate-token
+scan additionally established a maximum validated scale of 2. This confirms that zero is unrated
+while every positive finite Decimal through 5 is a recorded rating and that `decimal128(3,2)`
+exactly represents every observed valid rating. The exact-token scan
+confirmed lowercase `nan` counts for the eight optional fields in
+`reports/diagnostics/metadata_diagnostic.md`; no other tested NA-like spelling occurred.
+
 | Column | Logical type | Nullable | Meaning |
 |---|---|---:|---|
 | `comment_id` | int64 | no | Strictly parsed raw `comments.id` |
@@ -179,9 +197,9 @@ One canonical row per `comment_id` after exact full-row deduplication and confli
 | `created_at_raw` | string | no | Exact source Jalali date text |
 | `created_at_jalali` | string | no | Canonical numeric Jalali date `YYYY-MM-DD` |
 | `created_at_gregorian` | date32/date | no | Converted Gregorian date-only value |
-| `rate` | float64 | yes | Valid recorded rating in the inclusive 1–5 range |
+| `rate` | decimal128(3,2) | yes | Exact valid rating where `0 < rate <= 5` and scale is at most 2; no rounding |
 | `is_unrated` | boolean | no | True when raw rate is exactly zero |
-| `invalid_rate` | boolean | no | True when a non-null raw rate is outside 1–5 and not zero |
+| `invalid_rate` | boolean | no | True when raw rate is over-scale, negative, non-numeric, non-finite, or greater than 5 |
 | `recommendation_status` | string | yes | Preserved independently from `rate` |
 | `is_buyer` | boolean | yes | Strictly parsed buyer indicator |
 | `advantages` | string | yes | Raw text/list representation; no semantic parsing yet |
@@ -190,12 +208,16 @@ One canonical row per `comment_id` after exact full-row deduplication and confli
 | `dislikes` | int64 | yes | Strictly parsed, non-negative count |
 | `seller_title` | string | yes | Optional seller title; exact lowercase `nan` sentinel becomes null |
 | `seller_code` | string | yes | Opaque source business code; empty/blank or exact lowercase `nan` sentinel becomes null, otherwise preserved exactly |
-| `true_to_size_rate` | string | yes | Optional size-fit category |
+| `true_to_size_rate` | string | yes | Optional size-fit category; exact lowercase `nan` sentinel becomes null |
 | `comment_id_conflict` | boolean | no | True when distinct rows shared this comment ID |
 | `canonical_source_row_number` | int64 | no | Source row selected by the canonical rule |
 
-Missing `title`, `advantages`, `disadvantages`, `recommendation_status`, seller fields, or
-`true_to_size_rate` is not grounds for row removal. A missing body must be retained and audited;
+Exact lowercase `nan` is a null sentinel only in `title`, `body`, `recommendation_status`,
+`advantages`, `disadvantages`, `seller_title`, `seller_code`, and `true_to_size_rate`.
+Whitespace-only text also maps to null. Uppercase `NAN`, `NaN`, `NA`, and every other nonblank
+opaque token are preserved exactly. Missing `title`, `advantages`, `disadvantages`,
+`recommendation_status`, seller fields, or `true_to_size_rate` is not grounds for row removal. A
+missing body must be retained and audited;
 Phase 1 does not invent text or substitute the title for the body. Preserve comments with missing
 body in `comments_clean`. A later embedding stage may exclude a comment from embedding input only
 when all usable text components (`body`, `title`, `advantages`, and `disadvantages`) are null or
@@ -220,21 +242,21 @@ blank; that is not a cleaning-table deletion rule.
 | products | `min_price_last_month` | offers | `min_price_last_month` | Strict numeric parse; zero to null as unavailable history |
 | comments | `id` | comments | `comment_id` | Strict signed-`int64` parse; quarantine invalid required ID |
 | comments | `product_id` | comments | `product_id` | Strict signed-`int64` parse; quarantine invalid required ID |
-| comments | `title` | comments | `title` | Blank to null |
-| comments | `body` | comments | `body` | Blank to null; primary text field |
+| comments | `title` | comments | `title` | Blank/whitespace or exact lowercase `nan` to null |
+| comments | `body` | comments | `body` | Blank/whitespace or exact lowercase `nan` to null; primary text field |
 | comments | `created_at` | comments | `created_at_raw` | Preserve the exact source value |
 | comments | `created_at` | comments | `created_at_jalali` | Explicit month mapping to Jalali `YYYY-MM-DD` |
 | comments | `created_at` | comments | `created_at_gregorian` | Explicit tested Jalali conversion to date-only ISO/Parquet date |
-| comments | `rate` | comments | `rate` | Strict numeric parse; zero/out-of-range rules |
-| comments | `recommendation_status` | comments | `recommendation_status` | Blank to null; no inference from rate |
+| comments | `rate` | comments | `rate` | Strict finite Decimal parse; `0 < rate <= 5` at scale <=2 preserved exactly, zero to null/unrated, invalid to null/flag |
+| comments | `recommendation_status` | comments | `recommendation_status` | Blank/whitespace or exact lowercase `nan` to null; no inference from rate |
 | comments | `is_buyer` | comments | `is_buyer` | Accept only `True`/`False`; quarantine unrecognized values |
-| comments | `advantages` | comments | `advantages` | Blank to null; otherwise preserve |
-| comments | `disadvantages` | comments | `disadvantages` | Blank to null; otherwise preserve |
+| comments | `advantages` | comments | `advantages` | Blank/whitespace or exact lowercase `nan` to null; otherwise preserve |
+| comments | `disadvantages` | comments | `disadvantages` | Blank/whitespace or exact lowercase `nan` to null; otherwise preserve |
 | comments | `likes` | comments | `likes` | Strict non-negative integer parse |
 | comments | `dislikes` | comments | `dislikes` | Strict non-negative integer parse |
 | comments | `seller_title` | comments | `seller_title` | Empty/blank and exact lowercase `nan` sentinel to null; otherwise preserve exactly |
 | comments | `seller_code` | comments | `seller_code` | Empty/blank and exact lowercase `nan` sentinel to null; preserve every other value exactly as an opaque string, including leading zeros |
-| comments | `true_to_size_rate` | comments | `true_to_size_rate` | Blank to null; preserve category |
+| comments | `true_to_size_rate` | comments | `true_to_size_rate` | Blank/whitespace or exact lowercase `nan` to null; preserve category |
 
 ## 6. Deterministic canonical-selection rules
 
@@ -265,8 +287,9 @@ candidates, and count the omission.
 Remove exact full-row duplicates, then group by `comment_id`. If distinct rows share an ID, mark a
 conflict, write all alternatives to `comment_conflicts`, and choose the canonical row as follows:
 
-1. Count non-null values across all mapped source fields except `comment_id`. Use blank-to-null
-   values for this count but otherwise do not normalize the text.
+1. Count non-null values across all mapped source fields except `comment_id`. Use blank/whitespace-
+   to-null values and the eight exact field-specific lowercase-`nan` sentinel conversions for this
+   count, but otherwise do not normalize the text.
 2. Choose the row with the greatest completeness count.
 3. On a tie, choose the lexicographically smallest SHA-256 digest of the length-prefixed mapped
    raw values in source-column order.
@@ -311,16 +334,24 @@ quarantine preservation does not make the clean-table action lossless.
 | COM-001 | Entire comment raw row repeats | Keep first source occurrence; drop later occurrences | `comments_exact_full_row_duplicates_removed` | Yes |
 | COM-002 | Distinct rows share `comment_id` | Preserve all in conflict audit; apply canonical rule | `comment_id_conflict=true` | Yes |
 | COM-003 | Optional comment fields are missing | Retain comment | Missing counts per column | No |
-| COM-004 | `rate` is within 1–5 inclusive, including fractional values | Preserve numeric value | Valid-rate count | No |
+| COM-004 | `rate` is finite, `0 < rate <= 5`, and has at most two decimal places | Preserve exact Decimal value without rounding | Valid-rate count | No |
 | COM-005 | `rate=0` | Set clean rate to null; do not infer negative sentiment | `is_unrated=true`, zero-rate count | Yes |
-| COM-006 | Non-null rate is outside 1–5 and is not zero | Set rate to null; preserve raw row/value in audit | `invalid_rate=true` | Yes |
+| COM-006 | Rate is negative, non-numeric, non-finite, or greater than 5 | Set rate to null; preserve raw row/value in audit | `invalid_rate=true` | Yes |
 | COM-007 | Rate is `2500` | Apply COM-006 explicitly | Invalid-rate audit includes raw `2500` | Yes |
+| COM-021 | Finite positive `rate <= 5` has more than two decimal places | Set null; preserve raw value in row audit; never round or truncate | `invalid_rate=true`, over-scale-rate audit | Yes |
 | COM-008 | Recommendation is present or missing | Preserve independently; never derive from rate | Recommendation distribution audit | No |
 | COM-009 | Body is missing | Retain comment; defer embedding eligibility to downstream text assembly | Missing-body count | No |
 | COM-010 | `seller_code` is nonblank and is not exact lowercase `nan` | Preserve the exact source text; do not parse, strip, or normalize | `seller_code_nonblank_real_count` | No |
 | COM-011 | `seller_code` is missing | Retain as null | `seller_code_missing_count` | No |
 | COM-012 | Optional `likes` or `dislikes` is nonblank but not a non-negative signed-`int64` integer | Set null; preserve raw value in row audit | Invalid-optional-count by field | Yes |
-| COM-013 | `seller_code` or `seller_title` is exactly lowercase `nan` | Convert to null using this explicit column-specific sentinel rule | Sentinel-to-null aggregate count by column | Yes |
+| COM-013 | `seller_code` is exactly lowercase `nan` | Convert to null with an aggregate counter | `seller_code_sentinel_to_null` | Yes |
+| COM-014 | `seller_title` is exactly lowercase `nan` | Convert to null with an aggregate counter | `seller_title_sentinel_to_null` | Yes |
+| COM-015 | `title` is exactly lowercase `nan` | Convert to null with an aggregate counter | `title_sentinel_to_null` | Yes |
+| COM-016 | `body` is exactly lowercase `nan` | Convert to null with an aggregate counter | `body_sentinel_to_null` | Yes |
+| COM-017 | `recommendation_status` is exactly lowercase `nan` | Convert to null with an aggregate counter | `recommendation_status_sentinel_to_null` | Yes |
+| COM-018 | `advantages` is exactly lowercase `nan` | Convert to null with an aggregate counter | `advantages_sentinel_to_null` | Yes |
+| COM-019 | `disadvantages` is exactly lowercase `nan` | Convert to null with an aggregate counter | `disadvantages_sentinel_to_null` | Yes |
+| COM-020 | `true_to_size_rate` is exactly lowercase `nan` | Convert to null with an aggregate counter | `true_to_size_rate_sentinel_to_null` | Yes |
 | DATE-001 | `created_at` matches `D <recognized Persian Jalali month> YYYY` | Preserve exact raw value and construct canonical Jalali `YYYY-MM-DD` | Date-format and range audit | No |
 | DATE-002 | Valid canonical Jalali date | Convert with an explicit tested Jalali algorithm to Gregorian date-only value | Conversion implementation/version in manifest | No |
 | DATE-003 | Date shape, month, or Jalali day is invalid in a future source | Quarantine row and preserve raw value; never use ambiguous automatic parsing | Invalid-date audit | Yes |
@@ -373,21 +404,22 @@ quarantine preservation does not make the clean-table action lossless.
 - `comment_id` is non-null and unique.
 - `product_id` is non-null and references `products_clean.product_id`.
 - Required IDs are signed `int64`; invalid required-ID rows are quarantined.
-- `rate` is null or within 1–5 inclusive.
+- `rate` is null or an exact finite Decimal where `0 < rate <= 5` and scale is at most 2.
 - Raw zero rates map to null with `is_unrated=true` and `invalid_rate=false`.
-- Other out-of-range/non-numeric rates map to null with `invalid_rate=true` and have an audit row.
+- Over-scale, negative, non-numeric, non-finite, and greater-than-5 rates map to null with
+  `invalid_rate=true` and have a row-level audit record.
 - The known raw `2500` value is represented in the invalid-rate audit.
-- Recommendation status is unchanged except blank-to-null and is never inferred from rate.
+- Recommendation status is unchanged except blank/whitespace or exact lowercase-`nan` to null and
+  is never inferred from rate.
 - All alternatives for conflicting comment IDs are present in `comment_conflicts`.
 - Missing optional fields do not reduce row counts.
 - Missing body does not remove a row from `comments_clean`.
-- `seller_code` is null or an exact nonblank, non-sentinel source string. Exact lowercase `nan`
-  becomes null only for `seller_code` and `seller_title`; different casing and unrelated NA-like
-  opaque tokens are not inferred as missing. Numeric-looking values remain strings, leading zeros
-  are preserved, and no value is subjected to ID-003 merely because it is alphanumeric or Unicode.
-- The audit separately reports missing, blank-to-null, lowercase-`nan` sentinel-to-null, and real
-  nonblank `seller_code` counts. These routine states use aggregate counters rather than row-level
-  audit records.
+- Each of the eight confirmed optional text fields is null after blank/whitespace or exact lowercase
+  `nan`; different casing (`NAN`, `NaN`) and unconfirmed opaque tokens (`NA` and others) are not
+  inferred as missing. Numeric-looking `seller_code` values remain strings, leading zeros are
+  preserved, and no value is subjected to ID-003 merely because it is alphanumeric or Unicode.
+- The audit separately reports missing/blank and per-field lowercase-`nan` sentinel-to-null counts.
+  Sentinel conversions use aggregate counters, never millions of row-level audit records.
 - `is_buyer` contains only parsed source `True`/`False`; unrecognized values are quarantined.
 - `created_at_raw` exactly preserves the source text.
 - `created_at_jalali` matches `YYYY-MM-DD` and represents the same validated Jalali date.
@@ -433,7 +465,7 @@ this top-level structure; later comment processing may extend it without changin
 
 ```json
 {
-  "specification_version": "1.0.3",
+  "specification_version": "1.0.6",
   "status": "success",
   "source": {},
   "configuration": {},
@@ -466,7 +498,7 @@ audit must include the milestone-2 reconciliation equations and their pass/fail 
 successful only after all output files are atomically finalized and every acceptance validation
 passes. Failed runs must not publish partial files as final outputs.
 
-`run_manifest.json` must record `specification_version="1.0.3"`, `status`, deterministic `run_id`,
+`run_manifest.json` must record `specification_version="1.0.6"`, `status`, deterministic `run_id`,
 source provenance, configuration, output row counts and checksums, dependency versions,
 `offer_recency="unknown"`, and `currency_status="IRR_inferred"`. Its `price_review` object must
 repeat the high-price population definition, population size, one-based nearest rank, calculated
@@ -479,9 +511,10 @@ comments processing is implemented.
 
 - Read CSVs with configurable chunks, defaulting to 100,000 rows or less if memory tests require.
 - Disable pandas' default NA-token vocabulary (`keep_default_na=False`) or use an equivalent exact
-  CSV policy before applying field-specific missing rules. Opaque strings such as uppercase
-  `seller_code="NAN"` remain source values; only exact lowercase `nan` in `seller_code` and
-  `seller_title` is the approved sentinel, and an actually empty CSV field is missing.
+  CSV policy before applying field-specific missing rules. Exact lowercase `nan` is approved only
+  for the eight specified comment fields; uppercase `NAN`, `NaN`, `NA`, and other opaque tokens
+  remain source values. Broad inference would erase the token and make this case-sensitive policy
+  unverifiable.
 - Use disk-backed keyed state, partitioning, or an embedded database for global deduplication,
   canonical grouping, and joins. Never retain all comments or their text in memory.
 - Compute full-row and canonical hashes from explicit column order, type tags, null markers, UTF-8
@@ -533,10 +566,10 @@ comments processing is implemented.
     inference is prohibited.
 17. The implementation preserves category labels unchanged and treats future corrections as a
     separate versioned enrichment output.
-18. `seller_code` round-trips as nullable exact text, including numeric-looking strings, leading
-    zeros, and Unicode; it is never interpreted as a numeric identifier. Exact lowercase `nan` in
-    both seller columns converts to null with per-column aggregate counts, while uppercase `NAN`
-    and all other nonblank codes remain unchanged.
+18. All eight confirmed optional comment fields convert exact lowercase `nan` to null with stable
+    per-field aggregate counters; whitespace-only values also become null, while uppercase `NAN`,
+    `NaN`, `NA`, and all other nonblank tokens remain unchanged. `seller_code` round-trips as
+    nullable exact text, including numeric-looking strings, leading zeros, and Unicode.
 19. Every row in `offers_clean` references a valid canonical `products_clean.product_id`.
     Otherwise-valid offers without one are excluded under OFF-009, preserved in offer quarantine
     with raw/source traceability, and included in reconciliation counts.
@@ -544,7 +577,7 @@ comments processing is implemented.
     deduplication and OFF-009 removal that have valid positive `price_raw`. The threshold equals
     the value at one-based rank `ceil(0.999 * N)` after ascending sort, and tests prove that values
     equal to the threshold are not flagged while greater values are flagged without removal.
-21. The audit and manifest record specification version 1.0.3, the high-price population, `N`,
+21. The audit and manifest record specification version 1.0.6, the high-price population, `N`,
     rank, method, threshold, and strict comparison policy; all milestone-2 reconciliation equations
     pass before the completion marker is written.
 

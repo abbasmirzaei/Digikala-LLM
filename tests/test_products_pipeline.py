@@ -92,7 +92,7 @@ def test_products_pipeline_end_to_end_and_independent_sides(tmp_path: Path) -> N
     output = tmp_path / "cleaned"
     write_products(source, synthetic_rows())
     audit = run_products_pipeline(source, output, chunksize=3)
-    assert audit["specification_version"] == "1.0.3"
+    assert audit["specification_version"] == "1.0.6"
 
     assert (output / COMPLETION_MARKER).read_text() == "success\n"
     products = read_rows(output, "products_clean.parquet")

@@ -7,6 +7,7 @@ import pyarrow.parquet as pq
 import pytest
 
 from digikala_llm.cleaning import (
+    COMMENT_RATE_TYPE,
     COMMENT_ROW_CANDIDATE_SCHEMA,
     COMMENTS_CLEAN_SCHEMA,
     INT64_MAX,
@@ -124,13 +125,28 @@ def test_invalid_product_rating_fields_quarantine(
 
 @pytest.mark.parametrize(
     ("raw_rate", "rate", "unrated", "invalid"),
-    [("1", 1.0, False, False), ("5", 5.0, False, False),
-     ("3.5", 3.5, False, False), ("0", None, True, False),
-     ("2500", None, False, True), ("-1", None, False, True),
-     ("bad", None, False, True), (None, None, False, False)],
+    [
+        ("0.05", Decimal("0.05"), False, False),
+        ("0.25", Decimal("0.25"), False, False),
+        ("0.75", Decimal("0.75"), False, False),
+        ("1", Decimal(1), False, False),
+        ("5", Decimal(5), False, False),
+        ("3.50", Decimal("3.50"), False, False),
+        ("0.001", None, False, True),
+        ("0", None, True, False),
+        ("2500", None, False, True),
+        ("-1", None, False, True),
+        ("5.01", None, False, True),
+        ("bad", None, False, True),
+        ("NaN", None, False, True),
+        ("Infinity", None, False, True),
+        (float("nan"), None, False, True),
+        (float("inf"), None, False, True),
+        (None, None, False, False),
+    ],
 )
 def test_comment_rating_branches(
-    raw_rate: object, rate: float | None, unrated: bool, invalid: bool
+    raw_rate: object, rate: Decimal | None, unrated: bool, invalid: bool
 ) -> None:
     result = transform_comment_row(comment_row(rate=raw_rate), 3)
     assert not result.quarantined
@@ -147,6 +163,20 @@ def test_offer_price_conversion_is_exact_and_raw_is_preserved() -> None:
     assert result.candidate_row["price_raw"] == 101
     assert result.candidate_row["price_toman"] == Decimal("10.1")
     pa.Table.from_pylist([result.candidate_row], schema=OFFER_ROW_CANDIDATE_SCHEMA)
+
+
+def test_comment_rate_arrow_type_rejects_unrepresentable_values_without_rounding() -> None:
+    with pytest.raises(pa.ArrowInvalid, match="Rescaling Decimal value would cause data loss"):
+        pa.scalar(Decimal("0.001"), type=COMMENT_RATE_TYPE)
+
+
+def test_over_scale_comment_rate_is_invalid_with_row_traceability() -> None:
+    result = transform_comment_row(comment_row(rate="0.001"), 42)
+    assert result.candidate_row is not None
+    assert result.candidate_row["rate"] is None
+    assert result.candidate_row["invalid_rate"] is True
+    assert result.audit_records[0]["rule_id"] == "COM-021"
+    assert result.audit_records[0]["raw_value"] == "0.001"
 
 
 def test_zero_price_is_null_and_flagged_without_quarantine() -> None:
@@ -321,7 +351,7 @@ def test_clean_schema_signatures_exactly_match_specification() -> None:
         ("created_at_raw", pa.string(), False),
         ("created_at_jalali", pa.string(), False),
         ("created_at_gregorian", pa.date32(), False),
-        ("rate", pa.float64(), True), ("is_unrated", pa.bool_(), False),
+        ("rate", pa.decimal128(3, 2), True), ("is_unrated", pa.bool_(), False),
         ("invalid_rate", pa.bool_(), False),
         ("recommendation_status", pa.string(), True),
         ("is_buyer", pa.bool_(), True), ("advantages", pa.string(), True),
@@ -409,15 +439,33 @@ def test_missing_or_blank_seller_code_becomes_null_with_aggregate_count(
     assert (counter, "seller_code") in result.aggregate_counter_keys
 
 
-def test_exact_lowercase_seller_title_sentinel_is_column_specific() -> None:
-    sentinel = transform_comment_row(comment_row(seller_title="nan"), 42)
-    uppercase = transform_comment_row(comment_row(seller_title="NAN"), 43)
+@pytest.mark.parametrize(
+    ("field", "rule_id"),
+    [
+        ("seller_code", "COM-013"),
+        ("seller_title", "COM-014"),
+        ("title", "COM-015"),
+        ("body", "COM-016"),
+        ("recommendation_status", "COM-017"),
+        ("advantages", "COM-018"),
+        ("disadvantages", "COM-019"),
+        ("true_to_size_rate", "COM-020"),
+    ],
+)
+def test_exact_lowercase_nan_sentinel_is_field_specific_and_aggregate_only(
+    field: str, rule_id: str
+) -> None:
+    sentinel = transform_comment_row(comment_row(**{field: "nan"}), 42)
+    uppercase = transform_comment_row(comment_row(**{field: "NAN"}), 43)
+    other = transform_comment_row(comment_row(**{field: "NA"}), 44)
     assert sentinel.candidate_row is not None
-    assert sentinel.candidate_row["seller_title"] is None
-    assert ("COM-013", "seller_title") in sentinel.aggregate_counter_keys
+    assert sentinel.candidate_row[field] is None
+    assert (rule_id, field) in sentinel.aggregate_counter_keys
     assert sentinel.audit_records == ()
     assert uppercase.candidate_row is not None
-    assert uppercase.candidate_row["seller_title"] == "NAN"
+    assert uppercase.candidate_row[field] == "NAN"
+    assert other.candidate_row is not None
+    assert other.candidate_row[field] == "NA"
 
 
 def test_transform_result_enforces_accepted_or_quarantined_invariant() -> None:

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import hashlib
 import json
 import os
@@ -31,8 +30,9 @@ from digikala_llm.cleaning import (
     transform_offer_row,
     transform_product_row,
 )
+from digikala_llm.csv_stream import iter_exact_csv_batches
 
-SPECIFICATION_VERSION = "1.0.3"
+SPECIFICATION_VERSION = "1.0.6"
 COMPLETION_MARKER = "_SUCCESS"
 CORE_SOURCE_FIELDS = (
     "title_fa",
@@ -332,44 +332,14 @@ def _iter_product_csv_batches(
     max_rows: int | None,
 ) -> Iterator[list[tuple[int, dict[str, str]]]]:
     """Yield exact-token CSV records with logical, not physical-line, row numbers."""
-    csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
-    with input_path.open("r", encoding="utf-8-sig", newline="") as source:
-        reader = csv.DictReader(source, delimiter=",", restkey=None, restval=None)
-        expected = list(PRODUCT_SOURCE_COLUMNS)
-        if reader.fieldnames != expected:
-            raise ValueError(
-                f"products CSV header mismatch: expected {expected}, got {reader.fieldnames}"
-            )
-        batch: list[tuple[int, dict[str, str]]] = []
-        records_read = 0
-        while max_rows is None or records_read < max_rows:
-            try:
-                raw = next(reader)
-            except StopIteration:
-                break
-            except csv.Error as exc:
-                raise ValueError(
-                    f"malformed products CSV data record {records_read + 1}: {exc}"
-                ) from exc
-            source_row = records_read + 2
-            if None in raw:
-                raise ValueError(
-                    f"products CSV data record {records_read + 1} has extra fields: "
-                    f"{raw[None]!r}"
-                )
-            missing = [column for column in expected if raw[column] is None]
-            if missing:
-                raise ValueError(
-                    f"products CSV data record {records_read + 1} has missing fields: {missing}"
-                )
-            exact_raw = {column: raw[column] for column in expected}
-            batch.append((source_row, exact_raw))
-            records_read += 1
-            if len(batch) == chunksize:
-                yield batch
-                batch = []
-        if batch:
-            yield batch
+    yield from iter_exact_csv_batches(
+        input_path,
+        PRODUCT_SOURCE_COLUMNS,
+        chunksize=chunksize,
+        max_rows=max_rows,
+        field_size_limit=CSV_FIELD_SIZE_LIMIT,
+        dataset_name="products",
+    )
 
 
 def _insert_product_candidate(

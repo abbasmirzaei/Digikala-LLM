@@ -19,6 +19,9 @@ import pyarrow as pa
 
 INT64_MAX = 2**63 - 1
 MONEY_TYPE = pa.decimal128(20, 1)
+# The complete rating scan found a maximum validated source scale of two digits.
+# This fixed-scale type exactly represents every observed valid token in 0 < rate <= 5.
+COMMENT_RATE_TYPE = pa.decimal128(3, 2)
 MIN_JALALI_YEAR = 1
 MAX_JALALI_YEAR = 9377
 PERSIAN_MONTHS = (
@@ -82,7 +85,7 @@ COMMENTS_CLEAN_SCHEMA = pa.schema(
         pa.field("created_at_raw", pa.string(), nullable=False),
         pa.field("created_at_jalali", pa.string(), nullable=False),
         pa.field("created_at_gregorian", pa.date32(), nullable=False),
-        pa.field("rate", pa.float64()),
+        pa.field("rate", COMMENT_RATE_TYPE),
         pa.field("is_unrated", pa.bool_(), nullable=False),
         pa.field("invalid_rate", pa.bool_(), nullable=False),
         pa.field("recommendation_status", pa.string()),
@@ -166,6 +169,22 @@ PRODUCT_CONFLICT_SCHEMA = pa.schema(
     ]
 )
 
+COMMENT_CONFLICT_SCHEMA = pa.schema(
+    [
+        field
+        for field in COMMENTS_CLEAN_SCHEMA
+        if field.name not in {"comment_id_conflict", "canonical_source_row_number"}
+    ]
+    + [
+        pa.field("candidate_source_row_number", pa.int64(), nullable=False),
+        pa.field("canonical_source_row_number", pa.int64(), nullable=False),
+        pa.field("completeness", pa.int64(), nullable=False),
+        pa.field("canonical_digest", pa.string(), nullable=False),
+        pa.field("raw_mapped_json", pa.string(), nullable=False),
+        pa.field("selected_as_canonical", pa.bool_(), nullable=False),
+    ]
+)
+
 T = TypeVar("T")
 
 
@@ -210,11 +229,21 @@ RULE_CATALOG = {
     "OFF-008": RuleDefinition("quarantine offer with invalid price history", "error", True, True),
     "COM-005": RuleDefinition("set comment rate to null as unrated", "info", True, False),
     "COM-006": RuleDefinition("set invalid comment rate to null", "warning", True, True),
+    "COM-021": RuleDefinition(
+        "set over-scale comment rate to null", "warning", True, True
+    ),
     "COM-009": RuleDefinition("retain comment with missing body", "info", False, False),
     "COM-010": RuleDefinition("preserve opaque seller code", "info", False, False),
     "COM-011": RuleDefinition("retain missing seller code as null", "info", False, False),
     "COM-012": RuleDefinition("set invalid optional count to null", "warning", True, True),
-    "COM-013": RuleDefinition("set explicit seller sentinel to null", "info", True, False),
+    "COM-013": RuleDefinition("set seller_code lowercase nan sentinel to null", "info", True, False),
+    "COM-014": RuleDefinition("set seller_title lowercase nan sentinel to null", "info", True, False),
+    "COM-015": RuleDefinition("set title lowercase nan sentinel to null", "info", True, False),
+    "COM-016": RuleDefinition("set body lowercase nan sentinel to null", "info", True, False),
+    "COM-017": RuleDefinition("set recommendation_status lowercase nan sentinel to null", "info", True, False),
+    "COM-018": RuleDefinition("set advantages lowercase nan sentinel to null", "info", True, False),
+    "COM-019": RuleDefinition("set disadvantages lowercase nan sentinel to null", "info", True, False),
+    "COM-020": RuleDefinition("set true_to_size_rate lowercase nan sentinel to null", "info", True, False),
     "DATE-003": RuleDefinition("quarantine comment", "error", True, True),
 }
 
@@ -360,15 +389,22 @@ def _parse_product_rate(value: object) -> ValueResult[Decimal]:
     return ValueResult(number, True, raw)
 
 
-def _parse_comment_rate(value: object) -> tuple[float | None, bool, bool, str | None]:
-    if _is_missing(value) or (isinstance(value, str) and value.strip() == ""):
+def _parse_comment_rate(value: object) -> tuple[Decimal | None, bool, bool, str | None]:
+    """Parse a recorded comment rating without binary-float conversion.
+
+    ``None`` and blank source fields are missing.  Numeric NaN and infinities are
+    invalid values, even when a caller supplies them as Python floats.
+    """
+    if value is None or (isinstance(value, str) and value.strip() == ""):
         return None, False, False, None
     number = _decimal(value)
-    if number is None or number < 1 or number > 5:
-        if number == 0:
-            return None, True, False, "COM-005"
+    if number is None or number < 0 or number > 5:
         return None, False, True, "COM-006"
-    return float(number), False, False, None
+    if number == 0:
+        return None, True, False, "COM-005"
+    if -number.as_tuple().exponent > 2:
+        return None, False, True, "COM-021"
+    return number, False, False, None
 
 
 def _jalali_to_gregorian(year: int, month: int, day: int) -> tuple[int, int, int]:
@@ -630,18 +666,38 @@ def _optional_count(
     return result.value
 
 
-def _seller_text(
+_COMMENT_NAN_SENTINEL_RULES = {
+    "seller_code": "COM-013",
+    "seller_title": "COM-014",
+    "title": "COM-015",
+    "body": "COM-016",
+    "recommendation_status": "COM-017",
+    "advantages": "COM-018",
+    "disadvantages": "COM-019",
+    "true_to_size_rate": "COM-020",
+}
+
+
+def clean_comment_text(value: object, field: str) -> str | None:
+    """Apply the exact, field-specific lowercase ``nan`` sentinel policy."""
+    if field in _COMMENT_NAN_SENTINEL_RULES and value == "nan":
+        return None
+    return clean_text(value)
+
+
+def _comment_text(
     raw: dict[str, object],
     field: str,
     events: list[AuditEvent],
     counters: list[tuple[str, str]],
 ) -> str | None:
     value = raw.get(field)
+    sentinel_rule = _COMMENT_NAN_SENTINEL_RULES.get(field)
+    if sentinel_rule is not None and value == "nan":
+        _record_event(events, counters, field, "nan", sentinel_rule)
+        return None
     if field == "seller_code" and (_is_missing(value) or value == ""):
         _record_event(events, counters, field, _raw_string(value), "COM-011")
-        return None
-    if value == "nan":
-        _record_event(events, counters, field, "nan", "COM-013")
         return None
     text = _clean_text_field(raw, field, events, counters)
     if field == "seller_code" and text is not None:
@@ -668,19 +724,26 @@ def transform_comment_row(raw: dict[str, object], source_row_number: int) -> Row
     fatal = any(not parsed.valid for parsed in (comment_id, product_id, buyer, created))
     rate, is_unrated, invalid_rate, rate_rule = _parse_comment_rate(raw.get("rate"))
     if rate_rule is not None:
-        _record_event(events, counters, "rate", _raw_string(raw.get("rate")), rate_rule)
+        rate_raw = raw.get("rate")
+        _record_event(
+            events,
+            counters,
+            "rate",
+            None if rate_raw is None else str(rate_raw),
+            rate_rule,
+        )
     likes = _optional_count(raw, "likes", events, counters)
     dislikes = _optional_count(raw, "dislikes", events, counters)
-    seller_code = _seller_text(raw, "seller_code", events, counters)
-    seller_title = _seller_text(raw, "seller_title", events, counters)
+    seller_code = _comment_text(raw, "seller_code", events, counters)
+    seller_title = _comment_text(raw, "seller_title", events, counters)
     parsed_date = created.value
-    body = _clean_text_field(raw, "body", events, counters)
+    body = _comment_text(raw, "body", events, counters)
     if body is None:
         _record_event(events, counters, "body", _raw_string(raw.get("body")), "COM-009")
     row = {
         "comment_id": comment_id.value,
         "product_id": product_id.value,
-        "title": _clean_text_field(raw, "title", events, counters),
+        "title": _comment_text(raw, "title", events, counters),
         "body": body,
         "created_at_raw": parsed_date.raw if parsed_date else None,
         "created_at_jalali": parsed_date.canonical_jalali if parsed_date else None,
@@ -688,17 +751,17 @@ def transform_comment_row(raw: dict[str, object], source_row_number: int) -> Row
         "rate": rate,
         "is_unrated": is_unrated,
         "invalid_rate": invalid_rate,
-        "recommendation_status": _clean_text_field(
+        "recommendation_status": _comment_text(
             raw, "recommendation_status", events, counters
         ),
         "is_buyer": buyer.value,
-        "advantages": _clean_text_field(raw, "advantages", events, counters),
-        "disadvantages": _clean_text_field(raw, "disadvantages", events, counters),
+        "advantages": _comment_text(raw, "advantages", events, counters),
+        "disadvantages": _comment_text(raw, "disadvantages", events, counters),
         "likes": likes,
         "dislikes": dislikes,
         "seller_title": seller_title,
         "seller_code": seller_code,
-        "true_to_size_rate": _clean_text_field(
+        "true_to_size_rate": _comment_text(
             raw, "true_to_size_rate", events, counters
         ),
         "source_row_number": source_row_number,

@@ -376,3 +376,124 @@ code `nan`.
   29,213 distinct values, are all length 5, and must remain strings. Exact lowercase `nan` becomes
   null only through an explicit column-specific rule; other tokens are not interpreted through a
   broad pandas NA vocabulary.
+
+## 6. Full comment-rating and exact-token sentinel evidence
+
+A subsequent constant-memory full scan processed all 6,156,289 comment rows. Rating tokens were
+strictly parsed as finite Decimals; the scanner retained only aggregate counters and the distinct
+fractional-value set. It found 228,128 positive fractional ratings across 171 distinct fractional
+values.
+
+| Rating class | Count |
+|---|---:|
+| `rate == 0` | 529,098 |
+| `0 < rate < 1` | 5,145 |
+| `1 <= rate <= 5` | 5,622,045 |
+| `rate > 5` | 1 |
+| Negative, missing, or non-numeric | 0 |
+
+The sole greater-than-five value is `2500`. The positive sub-1 values are recorded ratings, not
+missing or invalid values. Their recommendation-status cross-tab is:
+
+| `0 < rate < 1` status | Count |
+|---|---:|
+| `not_recommended` | 2,951 |
+| `recommended` | 902 |
+| `no_idea` | 408 |
+| Missing-status sentinel | 884 |
+
+Zero remains an unavailable/unrated rating, rather than a sentiment inference. Its exact status
+cross-tab is:
+
+| `rate == 0` status | Count |
+|---|---:|
+| `recommended` | 425,745 |
+| `not_recommended` | 57,424 |
+| `no_idea` | 20,570 |
+| Missing-status sentinel | 25,359 |
+
+Therefore the version 1.0.6 policy is: preserve every finite Decimal where `0 < rate <= 5` and
+scale is at most two without rounding; map zero to null with `is_unrated=true`; and map over-scale,
+negative, non-numeric, non-finite, or greater-than-five values to null with `invalid_rate=true` and
+row traceability. The known `2500` value is invalid.
+
+The full source-token scan also found that every observed valid rating has at most two fractional
+digits (maximum Decimal scale 2). `comments_clean.rate` can therefore use `decimal128(3,2)`, which
+exactly represents the complete validated domain through `5.00` without float conversion or value
+rounding. SQLite must retain this field as text until Decimal reconstruction.
+
+A second exact-token, case-sensitive full scan found lowercase `nan` as a missing-value sentinel
+only in the following optional comment fields:
+
+| Field | Exact lowercase `nan` count |
+|---|---:|
+| `title` | 2,865,062 |
+| `body` | 637 |
+| `recommendation_status` | 894,426 |
+| `advantages` | 5,448,084 |
+| `disadvantages` | 5,744,017 |
+| `seller_title` | 302,181 |
+| `seller_code` | 302,181 |
+| `true_to_size_rate` | 6,065,516 |
+
+The same scan found 1,353 whitespace-only titles. Whitespace-only values remain null under the
+general text rule. No other tested NA-like spelling occurred. Consequently, `nan` conversion is
+exact and case-sensitive for the eight fields above: uppercase `NAN`, `NaN`, `NA`, and all other
+unconfirmed opaque tokens remain literal source text.
+
+Pandas default NA inference remains prohibited even with these explicit sentinels. It uses a broad,
+case-insensitive vocabulary that would erase unconfirmed opaque source tokens before the
+field-specific rules can preserve or audit them. CSV ingestion must retain exact raw tokens and
+apply only the confirmed transformations after parsing.
+
+## 7. Full duplicate-comment-ID semantic review
+
+This read-only review used two exact-token stdlib CSV passes. The first retained only
+`comment_id`, occurrence count, and first logical source row in a uniquely named temporary SQLite
+database; it did not retain complete comment rows. The second transformed only rows whose IDs were
+proven duplicated and reproduced the milestone-3 canonical order: highest corrected completeness,
+then SHA-256 of collision-safe canonical content, then lowest logical source row. A SQLite product
+ID index checked candidate foreign keys. The temporary database and its journal/WAL artifacts were
+removed in `finally`; no cleaned outputs were written.
+
+| Measure | Result |
+|---|---:|
+| Total comments | 6,156,289 |
+| Distinct comment IDs | 6,153,060 |
+| Repeated unique comment IDs | 3,226 |
+| Duplicate-ID excess rows | 3,229 |
+| IDs with one occurrence | 6,149,834 |
+| IDs with two occurrences | 3,223 |
+| IDs with three occurrences | 3 |
+| Maximum occurrences for one ID | 3 |
+| Exact raw-duplicate excess rows among duplicated IDs | 1,318 |
+| Identical cleaned-content excess rows | 1,318 |
+| IDs with genuinely conflicting cleaned alternatives | 1,908 |
+| Conflict alternative rows after clean-content collapse | 3,819 |
+| Candidate product IDs absent from `products_clean` | 0 |
+| IDs whose alternatives disagree on `product_id` | 0 |
+| IDs disagreeing on body | 241 |
+| IDs disagreeing on rate | 79 |
+| IDs disagreeing on recommendation status | 101 |
+| IDs disagreeing on `is_buyer` | 22 |
+| IDs disagreeing on `created_at` | 0 |
+
+The 1,318 cleaned-content collapses are exactly the 1,318 exact raw duplicate excess rows; this
+review found no additional distinct raw alternatives that become identical solely through current
+cleaning transformations. No candidate comment referenced a product missing from the retained
+`products_clean` output, and no duplicated comment ID changed product ID. Thus duplicate-ID
+conflicts are content-quality alternatives, not cross-product conflicts.
+
+Representative deterministic examples (bodies are bounded excerpts in the review output) were:
+
+| Category | comment_id | Source rows | Canonical selection |
+|---|---:|---|---|
+| Exact raw duplicate | 1,002,211 | 1,603,224; 1,603,317 | Same raw and canonical digest; earliest row 1,603,224 retained |
+| Genuine content conflict, digest tie-break | 1,271,444 | 4,006,919; 3,383,372 | Both completeness 8; SHA-256 `4815cd…` wins over `79895b…` |
+| Genuine content conflict, completeness | 9,196,308 | 2,696,607; 989,420 | Completeness 11 wins over 10; rate differs (4.0 vs 3.0) |
+| Completeness despite no listed core-field difference | 11,074,802 | 5,065,057; 964,265 | Completeness 12 wins over 11; a different optional mapped field supplies the distinction |
+
+No source-row tie-break was required: it would require equal canonical SHA-256 digests after the
+completeness tie, which did not occur. The diagnostic completed in 159.032 seconds with maximum RSS
+449,528 KiB. Its ID-count database peak was 189,538,304 bytes before the temporary product-ID index;
+the database was removed after completion.
