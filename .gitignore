@@ -4,6 +4,12 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 .ruff_cache/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.*
 data/raw/*
 data/interim/*
 data/processed/*
@@ -12,4 +18,3 @@ reports/eda/*
 !data/interim/.gitkeep
 !data/processed/.gitkeep
 !reports/eda/.gitkeep
-

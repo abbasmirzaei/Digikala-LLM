@@ -1,0 +1,10 @@
+{"id":"oily","kind":"search","query":"ضد آفتاب برای پوست چرب","expect_results":true}
+{"id":"dry","kind":"search","query":"ضد آفتاب برای پوست خشک","expect_results":true}
+{"id":"colorless","kind":"search","query":"ضد آفتاب بدون رنگ","expect_results":true}
+{"id":"light","kind":"search","query":"سبک و بدون چربی","expect_results":true}
+{"id":"value","kind":"search","query":"ضد آفتاب با قیمت مناسب","expect_results":true}
+{"id":"brand","kind":"search","query":"ضد آفتاب","filters":{"brand":"پرودرما"},"expect_results":true}
+{"id":"price","kind":"search","query":"ضد آفتاب","filters":{"max_historical_price":2000000},"expect_results":true}
+{"id":"minimum_evidence","kind":"search","query":"ضد آفتاب","filters":{"min_review_evidence":20},"expect_results":true}
+{"id":"no_result","kind":"search","query":"qxzvnonexistent","expect_results":false}
+{"id":"comparison","kind":"comparison","product_ids":[2331113,289763],"query":"برای پوست چرب"}

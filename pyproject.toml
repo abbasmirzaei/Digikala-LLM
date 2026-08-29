@@ -20,6 +20,7 @@ dev = [
   "ruff>=0.6,<1",
   "seaborn>=0.13,<1",
 ]
+demo = ["streamlit>=1.39,<2", "groq>=0.20"]
 
 [project.scripts]
 digikala-eda = "digikala_llm.eda:main"
@@ -29,6 +30,7 @@ digikala-category-viability = "digikala_llm.category_viability:main"
 digikala-build-sunscreen = "digikala_llm.sunscreen_builder:main"
 digikala-search-sunscreen = "digikala_llm.sunscreen_retrieval:main"
 digikala-compare-sunscreen = "digikala_llm.sunscreen_comparison:main"
+digikala-evaluate-sunscreen = "digikala_llm.sunscreen_evaluation:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -1,0 +1,117 @@
+{
+  "generation_note": "Deterministic retrieval and comparison are evaluated locally; Groq synthesis is not required.",
+  "summary": {
+    "passed": 10,
+    "failed": 0
+  },
+  "passed": 10,
+  "failed": 0,
+  "cases": [
+    {
+      "id": "oily",
+      "status": "pass",
+      "passed": true,
+      "checks": {
+        "failures": []
+      },
+      "failures": [],
+      "latency_ms": 561.365
+    },
+    {
+      "id": "dry",
+      "status": "pass",
+      "passed": true,
+      "checks": {
+        "failures": []
+      },
+      "failures": [],
+      "latency_ms": 524.309
+    },
+    {
+      "id": "colorless",
+      "status": "pass",
+      "passed": true,
+      "checks": {
+        "failures": []
+      },
+      "failures": [],
+      "latency_ms": 479.225
+    },
+    {
+      "id": "light",
+      "status": "pass",
+      "passed": true,
+      "checks": {
+        "failures": []
+      },
+      "failures": [],
+      "latency_ms": 526.153
+    },
+    {
+      "id": "value",
+      "status": "pass",
+      "passed": true,
+      "checks": {
+        "failures": []
+      },
+      "failures": [],
+      "latency_ms": 537.206
+    },
+    {
+      "id": "brand",
+      "status": "pass",
+      "passed": true,
+      "checks": {
+        "failures": []
+      },
+      "failures": [],
+      "latency_ms": 21.441
+    },
+    {
+      "id": "price",
+      "status": "pass",
+      "passed": true,
+      "checks": {
+        "failures": []
+      },
+      "failures": [],
+      "latency_ms": 224.912
+    },
+    {
+      "id": "minimum_evidence",
+      "status": "pass",
+      "passed": true,
+      "checks": {
+        "failures": []
+      },
+      "failures": [],
+      "latency_ms": 327.996
+    },
+    {
+      "id": "no_result",
+      "status": "pass",
+      "passed": true,
+      "checks": {
+        "failures": []
+      },
+      "failures": [],
+      "latency_ms": 76.377
+    },
+    {
+      "id": "comparison",
+      "status": "pass",
+      "passed": true,
+      "checks": {
+        "failures": []
+      },
+      "failures": [],
+      "latency_ms": 1.142
+    }
+  ],
+  "index": {
+    "products": 1048,
+    "canonical_comments": 53365,
+    "artifact_bytes": 4429573,
+    "build_runtime_seconds": 3.298857960035093
+  }
+}
