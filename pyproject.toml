@@ -27,6 +27,7 @@ digikala-clean-products = "digikala_llm.products_pipeline:main"
 digikala-clean-comments = "digikala_llm.comments_pipeline:main"
 digikala-category-viability = "digikala_llm.category_viability:main"
 digikala-build-sunscreen = "digikala_llm.sunscreen_builder:main"
+digikala-search-sunscreen = "digikala_llm.sunscreen_retrieval:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
