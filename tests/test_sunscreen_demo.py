@@ -46,6 +46,18 @@ def test_normal_presentation_is_compact_and_has_no_raw_or_debug_output() -> None
     assert "<br" not in source.casefold()
     assert 'result["results"][:MAX_PRIMARY_CARDS]' in source
     assert "MAX_PRIMARY_CARDS = 3" in source
+    assert "st.columns(MAX_PRIMARY_CARDS)" in source
+    assert "provider-badge" in source
+    assert "hero-mark" in source
+    assert "جمع‌بندی دستیار" in source
+    assert "پیشنهاد اول" in source
+    assert "گزینهٔ جایگزین" in source
+    assert "st.columns([4, 1])" in source
+    assert "انتخاب‌شده برای مقایسه" in source
+    assert "@media (max-width: 640px)" in demo.APP_CSS
+    assert "--navy" in demo.APP_CSS and "--teal" in demo.APP_CSS
+    assert "--canvas" in demo.APP_CSS and "max-width:1240px" in demo.APP_CSS
+    assert "Streamlit test IDs below are presentation hooks" in source
     assert len(demo.EXAMPLE_QUESTIONS) == 4
 
 
@@ -66,3 +78,12 @@ def test_comparison_adapter_preserves_measurable_fields_without_overall_winner()
     )
     assert rows[0]["قیمت تاریخی"].endswith("نه قیمت فعلی)")
     assert rows[0]["تعداد نظر"] == 7
+
+
+def test_card_summary_is_compact_and_keeps_a_bidi_safe_citation() -> None:
+    row = _result()["results"][0]
+    row["evidence"][0]["excerpt"] = "متن " * 100
+    summary = demo.card_summary(row)
+    visible = summary.replace("\u2066", "").replace("\u2069", "")
+    assert len(summary) < 230
+    assert "[نظر 11، ردیف 31]" in visible

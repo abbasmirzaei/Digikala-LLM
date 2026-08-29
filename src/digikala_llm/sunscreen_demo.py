@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import re
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,45 @@ EXAMPLE_QUESTIONS = (
 )
 MAX_PRIMARY_CARDS = 3
 _CITATION = re.compile(r"\[نظر (\d+)، ردیف (\d+)\]")
+# Streamlit test IDs below are presentation hooks; recheck them after a major Streamlit upgrade.
+APP_CSS = """
+<style>
+:root { --navy:#17324d; --teal:#276b73; --muted:#667085; --line:#d9e0e2; --paper:#fffdf9; --canvas:#f7f4ee; }
+.stApp { background: var(--canvas); }
+html, body, [data-testid='stAppViewContainer'] { direction:rtl; text-align:right; color:var(--navy); }
+header[data-testid='stHeader'] { background:transparent; }
+[data-testid='stToolbar'] { visibility:hidden; }
+.block-container { max-width:1240px; padding:1.15rem 1.5rem 3rem; }
+h1 { font-size:clamp(1.8rem, 3vw, 2.25rem); margin:.05rem 0 .25rem; letter-spacing:-.025em; }
+h2 { font-size:1.3rem; margin:1.65rem 0 .7rem; }
+[data-testid='stCaptionContainer'] { color:var(--muted); }
+[data-testid='stAlert'] { background:#f2f3f1; border:1px solid #e0e2de; border-radius:.7rem; color:#485562; padding:.45rem .7rem; }
+.stButton > button { border-radius:.6rem; min-height:2.45rem; font-weight:650; }
+.stButton > button[kind='primary'] { background:var(--teal); border-color:var(--teal); color:white; padding-inline:1.5rem; }
+.stButton > button[kind='primary']:hover { background:#1e5960; border-color:#1e5960; }
+[data-testid='stVerticalBlockBorderWrapper'] { background:var(--paper); border-color:var(--line); border-radius:1rem; box-shadow:0 5px 18px rgb(23 50 77 / 6%); padding:.85rem .95rem; }
+[data-testid='stVerticalBlockBorderWrapper'] .stMarkdown { line-height:1.9; max-width:82ch; }
+[data-testid='stExpander'] { border-color:var(--line); border-radius:.65rem; }
+.provider-badge,.rank-badge { display:inline-block; border:1px solid #b9d6d7; border-radius:999px; color:#19565c; background:#edf7f6; font-size:.75rem; font-weight:750; padding:.16rem .52rem; }
+.provider-badge--fallback { border-color:#d8dce2; color:#5d6775; background:#f5f6f8; }
+.rank-badge--alternative { border-color:#dde1e6; color:#596575; background:#f8f9fa; }
+.hero-kicker { color:var(--teal); font-size:.78rem; font-weight:750; letter-spacing:.035em; margin:0; }
+.hero-mark { align-items:center; background:#e8f2f1; border-radius:50%; color:var(--teal); display:inline-flex; font-size:1.05rem; height:2.15rem; justify-content:center; margin-left:.55rem; width:2.15rem; }
+.hero-subtitle { color:var(--muted); margin:0; }
+.answer-heading { color:var(--navy); font-size:1.05rem; font-weight:750; margin:.1rem 0 .55rem; }
+.answer-copy { line-height:1.95; max-width:82ch; }
+.product-title { color:var(--navy); display:-webkit-box; font-size:1rem; font-weight:750; line-height:1.65; margin:.5rem 0 .35rem; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; }
+.price-metric { color:var(--teal); font-size:.9rem; font-weight:750; line-height:1.65; margin:.55rem 0 .2rem; }
+[data-testid='stHorizontalBlock'] > [data-testid='column'] > div > [data-testid='stVerticalBlockBorderWrapper'] { height:100%; }
+@media (max-width: 640px) {
+  .block-container { padding:1rem .85rem 2rem; }
+  h1 { font-size:1.7rem; }
+  [data-testid='stHorizontalBlock'] { flex-wrap:wrap; gap:.55rem; }
+  [data-testid='stHorizontalBlock'] > [data-testid='column'] { flex:1 1 100%; min-width:100%; }
+  [data-testid='stVerticalBlockBorderWrapper'] { padding:.7rem; }
+}
+</style>
+"""
 
 
 def missing_artifact_message(error: FileNotFoundError) -> str:
@@ -35,7 +75,10 @@ def format_price(value: object) -> str:
 
 
 def format_search_result(row: dict[str, Any]) -> str:
-    return f"{format_price(row['historical_price_inferred_irr'])} | {row['total_canonical_review_count']:,} نظر"
+    return (
+        f"{format_price(row['historical_price_inferred_irr'])} | "
+        f"\u2066{row['total_canonical_review_count']:,}\u2069 نظر"
+    )
 
 
 def evidence_caption(evidence: dict[str, Any]) -> str:
@@ -50,7 +93,10 @@ def card_summary(row: dict[str, Any]) -> str:
     evidence = row.get("evidence", [])
     if not evidence:
         return "برای این محصول، شواهد کوتاهِ منطبق با پرسش بازیابی نشد."
-    return evidence_caption(evidence[0])
+    first = {**evidence[0], "excerpt": str(evidence[0]["excerpt"])[:130].rstrip()}
+    if len(str(evidence[0]["excerpt"])) > 130:
+        first["excerpt"] += "…"
+    return evidence_caption(first)
 
 
 def _render_evidence(st: Any, evidence: list[dict[str, Any]], title: str = "مشاهده شواهد") -> None:
@@ -63,24 +109,33 @@ def _render_evidence(st: Any, evidence: list[dict[str, Any]], title: str = "مش
 
 
 def _display_answer(st: Any, answer: dict[str, Any]) -> None:
-    if answer["source"] == "deterministic_fallback":
-        st.info("پاسخ زیر محلی و مبتنی بر شواهد است؛ توسط مدل زبانی تولید نشده است.")
-    else:
-        st.caption(f"پاسخ زبانی مبتنی بر Groq ({answer['model']}) و فقط بر پایهٔ شواهد نمایش‌داده‌شده")
-    st.markdown(
-        _CITATION.sub(
+    with st.container(border=True):
+        st.markdown('<p class="answer-heading">جمع‌بندی دستیار</p>', unsafe_allow_html=True)
+        if answer["source"] == "deterministic_fallback":
+            st.markdown('<span class="provider-badge provider-badge--fallback">پاسخ محلی</span>', unsafe_allow_html=True)
+            st.caption("مدل زبانی در این پاسخ استفاده نشده است.")
+        else:
+            st.markdown('<span class="provider-badge">Groq</span>', unsafe_allow_html=True)
+        rendered = _CITATION.sub(
             lambda match: f"[نظر \u2066{match.group(1)}\u2069، ردیف \u2066{match.group(2)}\u2069]",
             answer["text"],
         )
-    )
+        st.markdown(rendered)
 
 
 def _render_cards(st: Any, result: dict[str, Any], selected: list[int]) -> list[int]:
-    for row in result["results"][:MAX_PRIMARY_CARDS]:
-        with st.container(border=True):
-            st.markdown(f"**{row['title']}**")
+    rows = result["results"][:MAX_PRIMARY_CARDS]
+    for rank, (column, row) in enumerate(zip(st.columns(MAX_PRIMARY_CARDS), rows), start=1):
+        with column, st.container(border=True):
+            badge = "پیشنهاد اول" if rank == 1 else "گزینهٔ جایگزین"
+            badge_class = "rank-badge" if rank == 1 else "rank-badge rank-badge--alternative"
+            st.markdown(f'<span class="{badge_class}">{badge}</span>', unsafe_allow_html=True)
+            st.markdown(
+                f'<p class="product-title" dir="auto">\u2067{html.escape(row["title"])}\u2069</p>',
+                unsafe_allow_html=True,
+            )
             st.caption(f"برند: {row['brand'] or 'برند نامشخص'}")
-            st.caption(format_search_result(row))
+            st.markdown(f'<p class="price-metric">{format_search_result(row)}</p>', unsafe_allow_html=True)
             st.caption(card_summary(row))
             _render_evidence(st, row["evidence"])
             if st.button("افزودن به مقایسه", key=f"add-{row['product_id']}") and (
@@ -127,22 +182,21 @@ def main() -> None:
     import streamlit as st
 
     st.set_page_config(page_title="دستیار انتخاب ضدآفتاب", layout="wide")
-    st.markdown(
-        """<style>
-        html,body,[data-testid='stAppViewContainer']{direction:rtl;text-align:right}
-        .stButton>button[kind='primary']{background:#386a78;border-color:#386a78}
-        [data-testid='stVerticalBlockBorderWrapper']{padding:.55rem .75rem}
-        </style>""",
-        unsafe_allow_html=True,
-    )
+    st.markdown(APP_CSS, unsafe_allow_html=True)
 
     @st.cache_resource
     def load(path: str) -> SunscreenLexicalIndex:
         return SunscreenLexicalIndex(Path(path))
 
-    st.title("دستیار انتخاب ضدآفتاب")
-    st.caption("با شواهد بازیابی‌شده از نظر کاربران، برای محصولات مراقبت پوست > کرم ضد آفتاب")
-    st.info(SAFETY_NOTICE)
+    with st.container(border=True):
+        st.markdown('<span class="hero-mark" aria-hidden="true">☼</span>', unsafe_allow_html=True)
+        st.markdown('<p class="hero-kicker">راهنمای انتخاب مبتنی بر شواهد</p>', unsafe_allow_html=True)
+        st.title("دستیار انتخاب ضدآفتاب")
+        st.markdown(
+            '<p class="hero-subtitle">جست‌وجو در نظرهای کاربران و جمع‌بندی مستند برای انتخاب آگاهانه</p>',
+            unsafe_allow_html=True,
+        )
+    st.info(f"ⓘ {SAFETY_NOTICE}")
     try:
         index = load(str(DEFAULT_DATA_DIR))
     except FileNotFoundError as error:
@@ -151,28 +205,33 @@ def main() -> None:
 
     if "sunscreen_query" not in st.session_state:
         st.session_state.sunscreen_query = EXAMPLE_QUESTIONS[0]
-    st.write("نمونه پرسش‌ها")
-    example_columns = st.columns(len(EXAMPLE_QUESTIONS))
-    for column, example in zip(example_columns, EXAMPLE_QUESTIONS):
-        if column.button(example, key=f"example-{example}"):
-            st.session_state.sunscreen_query = example
-    query = st.text_input(
-        "چه ضدآفتابی می‌خواهید؟",
-        key="sunscreen_query",
-        placeholder="مثلاً: ضد آفتاب سبک و بدون رنگ",
-    )
-
-    brands = sorted({product["brand"] for product in index.products.values() if product["brand"]})
-    with st.expander("تنظیمات پیشرفته", expanded=False):
-        first, second, third, fourth = st.columns(4)
-        minimum_price = first.number_input("حداقل قیمت تاریخی (ریال)", min_value=0, value=0)
-        maximum_price = second.number_input(
-            "حداکثر قیمت تاریخی (ریال؛ صفر یعنی بدون سقف)", min_value=0, value=0
+    with st.container(border=True):
+        st.caption("نمونه پرسش‌ها")
+        for example_columns, examples in (
+            (st.columns(2), EXAMPLE_QUESTIONS[:2]),
+            (st.columns(2), EXAMPLE_QUESTIONS[2:]),
+        ):
+            for column, example in zip(example_columns, examples):
+                if column.button(example, key=f"example-{example}", use_container_width=True):
+                    st.session_state.sunscreen_query = example
+        query_column, action_column = st.columns([4, 1])
+        query = query_column.text_input(
+            "چه ضدآفتابی می‌خواهید؟",
+            key="sunscreen_query",
+            placeholder="مثلاً: ضد آفتاب سبک و بدون رنگ",
         )
-        brand = third.selectbox("برند", ["همه"] + brands)
-        minimum_reviews = fourth.slider("حداقل تعداد نظر", 0, 50, 1)
+        brands = sorted({product["brand"] for product in index.products.values() if product["brand"]})
+        with st.expander("تنظیمات پیشرفته", expanded=False):
+            first, second, third, fourth = st.columns(4)
+            minimum_price = first.number_input("حداقل قیمت تاریخی (ریال)", min_value=0, value=0)
+            maximum_price = second.number_input(
+                "حداکثر قیمت تاریخی (ریال؛ صفر یعنی بدون سقف)", min_value=0, value=0
+            )
+            brand = third.selectbox("برند", ["همه"] + brands)
+            minimum_reviews = fourth.slider("حداقل تعداد نظر", 0, 50, 1)
+        run_search = action_column.button("پیشنهاد بده", type="primary", use_container_width=True)
 
-    if st.button("پیشنهاد بده", type="primary", use_container_width=True):
+    if run_search:
         result = index.search(
             query,
             min_historical_price=minimum_price or None,
@@ -196,8 +255,14 @@ def main() -> None:
     st.header("پیشنهادها")
     selected = _render_cards(st, result, st.session_state.sunscreen_selected)
     st.session_state.sunscreen_selected = selected
-    st.caption("برای مقایسه، دو تا چهار محصول را با دکمهٔ هر کارت انتخاب کنید.")
-    if len(selected) >= 2 and st.button("مقایسهٔ انتخاب‌ها", use_container_width=True):
+    selected_titles = [row["title"] for row in result["results"] if row["product_id"] in selected]
+    with st.container(border=True):
+        if selected_titles:
+            st.caption(f"انتخاب‌شده برای مقایسه: {'، '.join(selected_titles)}")
+        else:
+            st.caption("برای مقایسه، دو تا چهار محصول را با دکمهٔ هر کارت انتخاب کنید.")
+        run_comparison = len(selected) >= 2 and st.button("مقایسهٔ انتخاب‌ها", type="primary")
+    if run_comparison:
         comparison = SunscreenComparisonService(index).compare(selected, query=query)
         answer = GroundedAssistant().answer_comparison(query, comparison)
         _render_comparison(st, comparison, answer)
