@@ -115,6 +115,16 @@ true-row/predicted-column confusion matrix. It must not use ratings, reactions, 
 product aggregates, or any target/post-outcome field as features, and it makes no claim beyond the
 sunscreen subset.
 
+### F11 — Final consolidated evaluation
+
+The project shall produce a traceable final report from existing published artifacts and verified
+offline evaluation reports. It shall distinguish functional/deterministic retrieval checks from
+human-labelled ranking quality, audit stored evidence provenance and bounded Groq context, and
+preserve unavailable measurements as unavailable. An opt-in live Groq audit may issue no more than
+five fixed prompts, records provider token usage only when supplied by the SDK, and leaves human
+review scores null until completed by a human. It must never fabricate tariff, spend, API usage,
+or live-answer evidence.
+
 ## Safety and truthfulness requirements
 
 - Never call a historical price “current,” “today,” “live,” or imply stock or availability.

@@ -20,8 +20,8 @@ GROQ_MODEL_ENV = "GROQ_MODEL"
 DEFAULT_GROQ_MODEL = "openai/gpt-oss-20b"
 MAX_PRODUCTS_IN_PROMPT = 3
 MAX_COMPARISON_PRODUCTS_IN_PROMPT = 4
-MAX_COMPLETION_TOKENS = 1_000
-RETRY_COMPLETION_TOKENS = 1_200
+MAX_COMPLETION_TOKENS = 1_600
+RETRY_COMPLETION_TOKENS = 1_800
 MAX_APPENDED_CITATIONS = 3
 _TRUNCATED_FINISH_REASONS = frozenset({"length", "max_tokens", "token_limit"})
 _BRACKETED_CITATION = re.compile(
@@ -65,8 +65,10 @@ SYSTEM_INSTRUCTION = """تو دستیار انتخاب ضدآفتاب هستی �
 برگرفته از نظر را به کاربران نسبت بده و با قالب دقیق
 [نظر COMMENT_ID، ردیف SOURCE_ROW] ارجاع بده و هرگز برچسب انگلیسی COMMENT_ID ننویس. فقط نامزدهای
 داده‌شده را مقایسه کن. ادعای بافت یا مناسب‌بودن را فقط به کاربران نسبت بده و تشخیص، سازگاری پزشکی
-یا قطعیت اعلام نکن. اگر شواهد برای پاسخ کافی نیست، صادقانه کمبود شواهد را بگو. پاسخ ۲۵۰ تا ۴۵۰ کلمه
-یا کوتاه‌تر اگر شواهد کم است، با جمله‌های کامل، خوانا و بدون JSON باشد."""
+یا قطعیت اعلام نکن. اگر شواهد برای پاسخ کافی نیست، صادقانه کمبود شواهد را بگو. پاسخ را در ۱۲۰ تا ۲۲۰
+کلمه نگه دار: یک مقدمهٔ کوتاه با جمله‌های کامل، حداکثر سه بولت فشردهٔ محصول (برای هر محصول حداکثر دو ارجاع)، و
+یک جملهٔ کوتاه دربارهٔ محدودیت شواهد. جدول نساز و شواهد یا محصول را تکرار نکن."""
+RETRY_BREVITY_INSTRUCTION = "پاسخ پیشین کامل نشد. این بار در ۱۲۰ تا ۲۲۰ کلمه، فشرده و کامل پاسخ بده؛ از جدول و تکرار پرهیز کن."
 
 
 def llm_model() -> str:
@@ -188,6 +190,32 @@ def citation_appendix(text: str, context: dict[str, Any]) -> str:
     return "شواهد قابل بررسی: " + "، ".join(missing) if missing else ""
 
 
+def complete_citations(text: str, context: dict[str, Any]) -> str:
+    """Apply the bounded citation completion used by the displayed answer.
+
+    If the provider omitted visible citation formatting entirely, append only a
+    small, deterministic prefix of the evidence that was already supplied to it.
+    An existing (including invalid) visible citation is left alone for auditing.
+    """
+    appendix = citation_appendix(text, context)
+    if appendix:
+        return f"{text}\n\n{appendix}"
+    if _BRACKETED_CITATION.search(text):
+        return text
+    supplied = list(_citations_by_comment_id(context).values())[:MAX_APPENDED_CITATIONS]
+    if not supplied:
+        return text
+    return f"{text}\n\nشواهد قابل بررسی: " + "، ".join(supplied)
+
+
+def finalize_grounded_answer(text: str, context: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Return the exact safe, citation-completed text production would display."""
+    normalized = normalize_citations(text, context)
+    if has_unsupported_current_price_claim(normalized):
+        return None, "unsupported_current_price_claim"
+    return complete_citations(normalized, context), None
+
+
 def has_unsupported_current_price_claim(text: str) -> bool:
     """Reject present-market assertions, while allowing explicit absence disclaimers."""
     for sentence in re.split(r"[.!؟\n]+", text.replace("\u200c", " ")):
@@ -196,6 +224,10 @@ def has_unsupported_current_price_claim(text: str) -> bool:
         ):
             return True
     return False
+
+
+def is_truncated_finish_reason(finish_reason: object) -> bool:
+    return isinstance(finish_reason, str) and finish_reason.casefold() in _TRUNCATED_FINISH_REASONS
 
 
 def _fallback_reason(error: Exception) -> str:
@@ -270,11 +302,13 @@ class GroundedAssistant:
         return self._answer(comparison_context(query, comparison))
 
     @staticmethod
-    def _completion(client: Any, context: dict[str, Any], max_tokens: int) -> tuple[str, str | None]:
+    def _completion(
+        client: Any, context: dict[str, Any], max_tokens: int, *, retry: bool = False
+    ) -> tuple[str, str | None]:
         response = client.chat.completions.create(
             model=llm_model(),
             messages=[
-                {"role": "system", "content": SYSTEM_INSTRUCTION},
+                {"role": "system", "content": SYSTEM_INSTRUCTION + ("\n" + RETRY_BREVITY_INSTRUCTION if retry else "")},
                 {"role": "user", "content": json.dumps(context, ensure_ascii=False)},
             ],
             temperature=0,
@@ -298,16 +332,14 @@ class GroundedAssistant:
         try:
             client = self._client_factory()
             text, finish_reason = self._completion(client, context, MAX_COMPLETION_TOKENS)
-            if finish_reason and finish_reason.casefold() in _TRUNCATED_FINISH_REASONS:
-                text, finish_reason = self._completion(client, context, RETRY_COMPLETION_TOKENS)
-            if not text or (finish_reason and finish_reason.casefold() in _TRUNCATED_FINISH_REASONS):
+            if is_truncated_finish_reason(finish_reason):
+                text, finish_reason = self._completion(client, context, RETRY_COMPLETION_TOKENS, retry=True)
+            if not text or is_truncated_finish_reason(finish_reason):
                 return self._fallback(context, "truncated_response")
-            text = normalize_citations(text, context)
-            if has_unsupported_current_price_claim(text):
-                return self._fallback(context, "unsupported_current_price_claim")
-            appendix = citation_appendix(text, context)
-            if appendix:
-                text = f"{text}\n\n{appendix}"
+            text, reason = finalize_grounded_answer(text, context)
+            if reason is not None:
+                return self._fallback(context, reason)
+            assert text is not None
             return {
                 "source": "groq",
                 "reason": "api_success",

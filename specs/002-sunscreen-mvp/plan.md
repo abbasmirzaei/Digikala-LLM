@@ -127,6 +127,15 @@ results. Snapshot tests will validate Persian labels and prohibit unsafe wording
    not overlap. Report Macro F1 as primary, plus class metrics, accuracy, true-row/predicted-column
    matrix, timings, and RSS. Do not tune on the held-out split.
 
+### 9. Final consolidated evaluation
+
+1. Consolidate only manifest and stored evaluation evidence into JSON/Markdown, recording a
+   requirement-to-evidence matrix and explicit unavailable fields.
+2. Audit canonical evidence pairs in fixed retrieval outputs and the bounded Groq context contract;
+   do not invent human relevance labels or ranking IR metrics.
+3. Provide a separately invoked five-prompt live Groq audit with atomic reports, token fields as
+   unavailable when absent, and null human-review rubric scores by default.
+
 ## Optional follow-ons (not a prerequisite)
 
 - Offline semantic artifact and later hybrid ranker, measured against the fixed evaluation set

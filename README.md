@@ -59,6 +59,22 @@ pip install -e ".[ml]"
 digikala-evaluate-recommendation-status
 ```
 
+### Final evaluation
+
+Create the offline consolidated report from existing published artifacts and evaluation reports:
+
+```bash
+digikala-evaluate-final
+```
+
+It writes [`final_evaluation.json`](reports/evaluation/final_evaluation.json) and
+[`final_evaluation.md`](reports/evaluation/final_evaluation.md). It does not call Groq. To run the
+separate, opt-in five-prompt live audit in your own terminal (with a configured key), use:
+
+```bash
+digikala-evaluate-sunscreen-live
+```
+
 نسخه‌ی اول یک سیستم هوشمند جست‌وجو و تحلیل محصول و نظر کاربران، مطابق معماری فاز صفر.
 
 ## وضعیت فعلی

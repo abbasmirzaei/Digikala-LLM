@@ -35,6 +35,8 @@ digikala-compare-sunscreen = "digikala_llm.sunscreen_comparison:main"
 digikala-evaluate-sunscreen = "digikala_llm.sunscreen_evaluation:main"
 digikala-build-sunscreen-semantic = "digikala_llm.sunscreen_semantic_builder:main"
 digikala-evaluate-recommendation-status = "digikala_llm.recommendation_status_evaluation:main"
+digikala-evaluate-final = "digikala_llm.final_evaluation:main"
+digikala-evaluate-sunscreen-live = "digikala_llm.sunscreen_live_audit:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

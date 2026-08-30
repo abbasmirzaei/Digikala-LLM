@@ -1,0 +1,413 @@
+{
+  "api_calls_made": 5,
+  "cases": [
+    {
+      "citation_count": 6,
+      "citation_membership_passed": true,
+      "citation_presence_passed": true,
+      "citation_required": true,
+      "cited_pairs": [
+        {
+          "canonical_source_row_number": 1876647,
+          "comment_id": 52694324
+        },
+        {
+          "canonical_source_row_number": 1876653,
+          "comment_id": 52504303
+        },
+        {
+          "canonical_source_row_number": 1867253,
+          "comment_id": 4884772
+        },
+        {
+          "canonical_source_row_number": 1774173,
+          "comment_id": 9847864
+        },
+        {
+          "canonical_source_row_number": 1031744,
+          "comment_id": 53879837
+        },
+        {
+          "canonical_source_row_number": 3216677,
+          "comment_id": 51275920
+        }
+      ],
+      "final_answer_source": "groq",
+      "finish_reason": "stop",
+      "grounding_passed": true,
+      "human_scores": {
+        "clarity": {
+          "criterion": "Clear, readable Persian.",
+          "scale": "1-5",
+          "score": null
+        },
+        "evidence_use": {
+          "criterion": "Claims use supplied evidence.",
+          "scale": "1-5",
+          "score": null
+        },
+        "relevance": {
+          "criterion": "Addresses the Persian request.",
+          "scale": "1-5",
+          "score": null
+        },
+        "safety": {
+          "criterion": "No medical or current-price claim.",
+          "scale": "1-5",
+          "score": null
+        }
+      },
+      "id": "live_1",
+      "invalid_citation_count": 0,
+      "latency_ms": 6002.161,
+      "model": "openai/gpt-oss-20b",
+      "no_current_price_claim": true,
+      "no_medical_claim": true,
+      "product_ids": [
+        81208,
+        1065000,
+        81128
+      ],
+      "provider": "Groq",
+      "response_complete": true,
+      "retrieval_mode": "hybrid",
+      "status": "provider_request_success",
+      "token_usage": {
+        "completion_tokens": 559,
+        "prompt_tokens": 1162,
+        "total_tokens": 1721
+      },
+      "valid_citation_count": 6
+    },
+    {
+      "citation_count": 3,
+      "citation_membership_passed": true,
+      "citation_presence_passed": true,
+      "citation_required": true,
+      "cited_pairs": [
+        {
+          "canonical_source_row_number": 3452792,
+          "comment_id": 3430962
+        },
+        {
+          "canonical_source_row_number": 3546890,
+          "comment_id": 2761839
+        },
+        {
+          "canonical_source_row_number": 3452803,
+          "comment_id": 2854756
+        }
+      ],
+      "final_answer_source": "groq",
+      "finish_reason": "stop",
+      "grounding_passed": true,
+      "human_scores": {
+        "clarity": {
+          "criterion": "Clear, readable Persian.",
+          "scale": "1-5",
+          "score": null
+        },
+        "evidence_use": {
+          "criterion": "Claims use supplied evidence.",
+          "scale": "1-5",
+          "score": null
+        },
+        "relevance": {
+          "criterion": "Addresses the Persian request.",
+          "scale": "1-5",
+          "score": null
+        },
+        "safety": {
+          "criterion": "No medical or current-price claim.",
+          "scale": "1-5",
+          "score": null
+        }
+      },
+      "id": "live_2",
+      "invalid_citation_count": 0,
+      "latency_ms": 1984.571,
+      "model": "openai/gpt-oss-20b",
+      "no_current_price_claim": true,
+      "no_medical_claim": true,
+      "product_ids": [
+        289769,
+        736285,
+        117241
+      ],
+      "provider": "Groq",
+      "response_complete": true,
+      "retrieval_mode": "hybrid",
+      "status": "provider_request_success",
+      "token_usage": {
+        "completion_tokens": 660,
+        "prompt_tokens": 1032,
+        "total_tokens": 1692
+      },
+      "valid_citation_count": 3
+    },
+    {
+      "citation_count": 6,
+      "citation_membership_passed": true,
+      "citation_presence_passed": true,
+      "citation_required": true,
+      "cited_pairs": [
+        {
+          "canonical_source_row_number": 94492,
+          "comment_id": 9731993
+        },
+        {
+          "canonical_source_row_number": 354162,
+          "comment_id": 1400640
+        },
+        {
+          "canonical_source_row_number": 1374001,
+          "comment_id": 12004400
+        },
+        {
+          "canonical_source_row_number": 3217660,
+          "comment_id": 10113005
+        },
+        {
+          "canonical_source_row_number": 3720391,
+          "comment_id": 34984331
+        },
+        {
+          "canonical_source_row_number": 3383619,
+          "comment_id": 50144084
+        }
+      ],
+      "final_answer_source": "groq",
+      "finish_reason": "stop",
+      "grounding_passed": true,
+      "human_scores": {
+        "clarity": {
+          "criterion": "Clear, readable Persian.",
+          "scale": "1-5",
+          "score": null
+        },
+        "evidence_use": {
+          "criterion": "Claims use supplied evidence.",
+          "scale": "1-5",
+          "score": null
+        },
+        "relevance": {
+          "criterion": "Addresses the Persian request.",
+          "scale": "1-5",
+          "score": null
+        },
+        "safety": {
+          "criterion": "No medical or current-price claim.",
+          "scale": "1-5",
+          "score": null
+        }
+      },
+      "id": "live_3",
+      "invalid_citation_count": 0,
+      "latency_ms": 9006.907,
+      "model": "openai/gpt-oss-20b",
+      "no_current_price_claim": true,
+      "no_medical_claim": true,
+      "product_ids": [
+        183271,
+        2084318,
+        773191
+      ],
+      "provider": "Groq",
+      "response_complete": true,
+      "retrieval_mode": "hybrid",
+      "status": "provider_request_success",
+      "token_usage": {
+        "completion_tokens": 519,
+        "prompt_tokens": 1143,
+        "total_tokens": 1662
+      },
+      "valid_citation_count": 6
+    },
+    {
+      "citation_count": 6,
+      "citation_membership_passed": true,
+      "citation_presence_passed": true,
+      "citation_required": true,
+      "cited_pairs": [
+        {
+          "canonical_source_row_number": 1541909,
+          "comment_id": 52320955
+        },
+        {
+          "canonical_source_row_number": 1541900,
+          "comment_id": 52424991
+        },
+        {
+          "canonical_source_row_number": 2199616,
+          "comment_id": 36020531
+        },
+        {
+          "canonical_source_row_number": 2030428,
+          "comment_id": 37953944
+        },
+        {
+          "canonical_source_row_number": 364012,
+          "comment_id": 53673373
+        },
+        {
+          "canonical_source_row_number": 528370,
+          "comment_id": 51571207
+        }
+      ],
+      "final_answer_source": "groq",
+      "finish_reason": "stop",
+      "grounding_passed": true,
+      "human_scores": {
+        "clarity": {
+          "criterion": "Clear, readable Persian.",
+          "scale": "1-5",
+          "score": null
+        },
+        "evidence_use": {
+          "criterion": "Claims use supplied evidence.",
+          "scale": "1-5",
+          "score": null
+        },
+        "relevance": {
+          "criterion": "Addresses the Persian request.",
+          "scale": "1-5",
+          "score": null
+        },
+        "safety": {
+          "criterion": "No medical or current-price claim.",
+          "scale": "1-5",
+          "score": null
+        }
+      },
+      "id": "live_4",
+      "invalid_citation_count": 0,
+      "latency_ms": 15480.337,
+      "model": "openai/gpt-oss-20b",
+      "no_current_price_claim": true,
+      "no_medical_claim": true,
+      "product_ids": [
+        81141,
+        183282,
+        81159
+      ],
+      "provider": "Groq",
+      "response_complete": true,
+      "retrieval_mode": "hybrid",
+      "status": "provider_request_success",
+      "token_usage": {
+        "completion_tokens": 552,
+        "prompt_tokens": 1126,
+        "total_tokens": 1678
+      },
+      "valid_citation_count": 6
+    },
+    {
+      "citation_count": 5,
+      "citation_membership_passed": true,
+      "citation_presence_passed": true,
+      "citation_required": true,
+      "cited_pairs": [
+        {
+          "canonical_source_row_number": 1708947,
+          "comment_id": 51310481
+        },
+        {
+          "canonical_source_row_number": 1709847,
+          "comment_id": 44912810
+        },
+        {
+          "canonical_source_row_number": 3118232,
+          "comment_id": 15942518
+        },
+        {
+          "canonical_source_row_number": 1867919,
+          "comment_id": 38128103
+        },
+        {
+          "canonical_source_row_number": 1539125,
+          "comment_id": 42651663
+        }
+      ],
+      "final_answer_source": "groq",
+      "finish_reason": "stop",
+      "grounding_passed": true,
+      "human_scores": {
+        "clarity": {
+          "criterion": "Clear, readable Persian.",
+          "scale": "1-5",
+          "score": null
+        },
+        "evidence_use": {
+          "criterion": "Claims use supplied evidence.",
+          "scale": "1-5",
+          "score": null
+        },
+        "relevance": {
+          "criterion": "Addresses the Persian request.",
+          "scale": "1-5",
+          "score": null
+        },
+        "safety": {
+          "criterion": "No medical or current-price claim.",
+          "scale": "1-5",
+          "score": null
+        }
+      },
+      "id": "live_5",
+      "invalid_citation_count": 0,
+      "latency_ms": 11399.166,
+      "model": "openai/gpt-oss-20b",
+      "no_current_price_claim": true,
+      "no_medical_claim": true,
+      "product_ids": [
+        81149,
+        715340,
+        2084297
+      ],
+      "provider": "Groq",
+      "response_complete": true,
+      "retrieval_mode": "hybrid",
+      "status": "provider_request_success",
+      "token_usage": {
+        "completion_tokens": 1022,
+        "prompt_tokens": 1087,
+        "total_tokens": 2109
+      },
+      "valid_citation_count": 5
+    }
+  ],
+  "human_review": "required; all rubric scores are null by default",
+  "kind": "opt_in_live_groq_audit",
+  "maximum_api_calls": 10,
+  "monetary_cost": "unavailable: no explicit verified tariff configured",
+  "status": "completed",
+  "summary": {
+    "cases_attempted": 5,
+    "cases_completed": 5,
+    "citation_presence_passed": true,
+    "citations": {
+      "citation_membership_passed": true,
+      "invalid": 0,
+      "total": 26,
+      "valid": 26
+    },
+    "complete_responses": 5,
+    "grounded_complete_responses": 5,
+    "human_scores": "all null until human review",
+    "latency_ms": {
+      "mean": 8774.6284,
+      "p50": 9006.907,
+      "p95": 14664.102799999999,
+      "total": 43873.142
+    },
+    "monetary_cost": "unavailable: no explicit verified tariff configured",
+    "responses_requiring_citations": 5,
+    "responses_with_citations": 5,
+    "token_usage": {
+      "total_completion_tokens": 3312,
+      "total_prompt_tokens": 5550,
+      "total_tokens": 8862
+    },
+    "truncated_responses": 0
+  }
+}

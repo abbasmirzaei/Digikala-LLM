@@ -108,6 +108,7 @@ def test_grounded_instruction_citation_and_mocked_groq_call(monkeypatch) -> None
     )
     assert "score_components" not in str(captured["messages"])
     assert captured["messages"][0]["content"] == llm.SYSTEM_INSTRUCTION
+    assert captured["max_tokens"] == llm.MAX_COMPLETION_TOKENS == 1_600
     assert "models" not in str(captured)
     assert "شواهد قابل بررسی" not in answer["text"]
 
@@ -207,6 +208,7 @@ def test_length_finish_reason_retries_once_and_never_accepts_truncated_text(monk
         llm.MAX_COMPLETION_TOKENS,
         llm.RETRY_COMPLETION_TOKENS,
     ]
+    assert llm.RETRY_BREVITY_INSTRUCTION in calls[1]["messages"][0]["content"]
 
 
 def test_second_length_response_uses_complete_non_llm_fallback(monkeypatch) -> None:  # type: ignore[no-untyped-def]
@@ -249,13 +251,23 @@ def test_citation_normalization_and_bounded_appendix() -> None:
     assert llm.citation_appendix(normalized, context) == ""
 
 
+def test_citation_completion_appends_only_bounded_supplied_evidence() -> None:
+    context = llm.retrieval_context("سبک", _retrieval(products=3, evidence=3))
+    completed, reason = llm.finalize_grounded_answer("پاسخ بدون قالب ارجاع", context)
+    assert reason is None and completed is not None
+    assert completed.count("[نظر ") == llm.MAX_APPENDED_CITATIONS
+    assert "[نظر 100، ردیف 1000]" in completed
+
+
 def test_instruction_retains_grounding_and_concise_complete_safety_contract() -> None:
     for term in (
         "فقط از کاتالوگ",
         "فقط نامزدهای",
         "به کاربران نسبت بده",
         "سازگاری پزشکی",
-        "۲۵۰ تا ۴۵۰",
+        "۱۲۰ تا ۲۲۰",
+        "حداکثر سه بولت",
+        "حداکثر دو ارجاع",
         "جمله‌های کامل",
         "COMMENT_ID",
     ):
@@ -331,4 +343,5 @@ def test_safe_current_price_disclaimers_are_accepted_as_groq_output(  # type: ig
     ).answer_recommendation("سبک", _retrieval())
     assert answer["source"] == "groq"
     assert answer["reason"] == "api_success"
-    assert answer["text"] == statement
+    assert answer["text"].startswith(statement)
+    assert "[نظر 100، ردیف 1000]" in answer["text"]

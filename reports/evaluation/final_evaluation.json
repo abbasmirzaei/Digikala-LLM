@@ -1,0 +1,1004 @@
+{
+  "answer_quality": {
+    "citation_membership": {
+      "citation_membership_passed": true,
+      "invalid": 0,
+      "total": 26,
+      "valid": 26
+    },
+    "citation_presence": {
+      "passed": true,
+      "responses_requiring_citations": 5,
+      "responses_with_citations": 5
+    },
+    "complete_generated_response": {
+      "complete": 5,
+      "truncated": 0
+    },
+    "grounded_complete_responses": 5,
+    "human_quality": "not scored: all human scores remain null",
+    "no_llm_judge_used": true,
+    "provider_request_success": {
+      "attempted_cases": 5,
+      "completed_cases": 5
+    }
+  },
+  "api_tokens_and_cost": {
+    "live_audit": {
+      "available": true,
+      "citation_membership": {
+        "citation_membership_passed": true,
+        "invalid": 0,
+        "total": 26,
+        "valid": 26
+      },
+      "citation_presence": {
+        "passed": true,
+        "responses_requiring_citations": 5,
+        "responses_with_citations": 5
+      },
+      "complete_generated_response": {
+        "complete": 5,
+        "truncated": 0
+      },
+      "grounded_complete_responses": 5,
+      "human_quality": "not scored: all human scores remain null",
+      "monetary_cost": "unavailable: no explicit verified tariff configured",
+      "provider_request_success": {
+        "attempted_cases": 5,
+        "completed_cases": 5
+      },
+      "token_usage": {
+        "total_completion_tokens": 3312,
+        "total_prompt_tokens": 5550,
+        "total_tokens": 8862
+      }
+    },
+    "local_embedding_compute": {
+      "api_token_usage": "not applicable",
+      "max_rss_kib": 2621812,
+      "runtime_seconds": 3579.3503998679807
+    },
+    "monetary_cost": "unavailable: no explicit verified tariff configured",
+    "original_maximum_5_usd_budget": "unverified: no account-spend evidence stored",
+    "token_usage": {
+      "total_completion_tokens": 3312,
+      "total_prompt_tokens": 5550,
+      "total_tokens": 8862
+    }
+  },
+  "failure_analysis": [
+    {
+      "failure": "full-comments SQLite/HDD bottleneck",
+      "mitigation": "scoped one-pass builder avoids SQLite",
+      "remaining_risk": "raw corpus rebuild remains expensive",
+      "root_cause": "disk-backed full-corpus workflow",
+      "symptom": "slow/bottlenecked historical attempt"
+    },
+    {
+      "failure": "decimal SQLite REAL precision",
+      "mitigation": "exact Decimal/TEXT contract",
+      "remaining_risk": "future consumers must preserve decimal schema",
+      "root_cause": "REAL representation",
+      "symptom": "binary-float precision loss"
+    },
+    {
+      "failure": "abandoned semantic staging",
+      "mitigation": "explicit cleanup and atomic success publication",
+      "remaining_risk": "future interrupted builds need the same review",
+      "root_cause": "interrupted prior build",
+      "symptom": "pre-success staging directory"
+    },
+    {
+      "failure": "Gemini 403",
+      "mitigation": "not used by this MVP",
+      "remaining_risk": "external providers can deny access",
+      "root_cause": "provider permission",
+      "symptom": "provider authorization failure"
+    },
+    {
+      "failure": "Groq model/permission failure",
+      "mitigation": "bounded local evidence fallback",
+      "remaining_risk": "live synthesis remains provider-dependent",
+      "root_cause": "provider configuration/access",
+      "symptom": "unavailable model or permission"
+    },
+    {
+      "failure": "Hugging Face Xet/CAS download",
+      "mitigation": "HTTP retry and cached local model",
+      "remaining_risk": "initial model availability",
+      "root_cause": "remote transfer path",
+      "symptom": "download failure"
+    },
+    {
+      "failure": "optional torchvision watcher noise",
+      "mitigation": "file-watcher mitigation",
+      "remaining_risk": "environment-specific warnings",
+      "root_cause": "optional dependency watcher",
+      "symptom": "watcher import noise"
+    },
+    {
+      "failure": "semantic artifact/model unavailable",
+      "mitigation": "explicit lexical fallback",
+      "remaining_risk": "semantic recall unavailable during fallback",
+      "root_cause": "missing/corrupt artifact or optional model",
+      "symptom": "semantic channel cannot load"
+    },
+    {
+      "failure": "weakest classifier class",
+      "mitigation": "balanced class weights and Macro F1",
+      "remaining_risk": "no_idea remains weak",
+      "root_cause": "class ambiguity/imbalance in subset",
+      "symptom": "lowest text-model F1 for no_idea"
+    },
+    {
+      "failure": "unproven Hybrid ranking superiority",
+      "mitigation": "report functional correctness separately",
+      "remaining_risk": "ranking uplift unknown",
+      "root_cause": "no human ranking labels",
+      "symptom": "fixed cases are not relevance judgements"
+    }
+  ],
+  "grounding_audit": {
+    "all_stored_evidence_pairs_traceable": true,
+    "bounded_groq_context_contract": {
+      "historical_price_guardrail": true,
+      "medical_safety_instruction_present": true,
+      "raw_scores_or_embeddings_absent": true
+    },
+    "citation_belongs_to_supplied_live_context": "unavailable: no stored live-answer audit",
+    "missing_comment_or_source_row_fields": 0,
+    "pairs_not_found_in_canonical_artifact": 0,
+    "stored_evidence_pairs_checked": 813,
+    "stored_generated_answers_available": 0
+  },
+  "recommendation_status": {
+    "counts": {
+      "class_distribution": {
+        "no_idea": 5107,
+        "not_recommended": 3730,
+        "recommended": 35771
+      },
+      "excluded_rows": 8757,
+      "total_canonical_rows": 53365,
+      "usable_labelled_rows": 44608
+    },
+    "failure_analysis": {
+      "lowest_text_model_f1_label": "no_idea",
+      "note": "Inspect the labelled confusion matrix; it is true rows by predicted columns."
+    },
+    "features": {
+      "fields": [
+        "title",
+        "body"
+      ],
+      "forbidden": [
+        "recommendation_status",
+        "rate",
+        "likes",
+        "dislikes",
+        "is_buyer",
+        "product aggregates"
+      ]
+    },
+    "improvement_over_dummy_macro_f1": 0.33479377582610537,
+    "input": {
+      "path": "data/processed/sunscreen_mvp/v1/sunscreen_comments_canonical.parquet",
+      "published_artifact_only": true
+    },
+    "labels": [
+      "no_idea",
+      "not_recommended",
+      "recommended"
+    ],
+    "limitations": [
+      "Single sunscreen-only holdout; no claim beyond this subset.",
+      "No hyperparameter tuning was performed on the holdout.",
+      "Text-only prediction does not establish product quality or medical suitability."
+    ],
+    "max_rss_kib": 389092,
+    "models": {
+      "dummy_most_frequent": {
+        "accuracy": 0.8019280349736576,
+        "configuration": {
+          "strategy": "most_frequent"
+        },
+        "confusion_matrix": {
+          "label_order": [
+            "no_idea",
+            "not_recommended",
+            "recommended"
+          ],
+          "orientation": "rows=true, columns=predicted",
+          "values": [
+            [
+              0,
+              0,
+              1021
+            ],
+            [
+              0,
+              0,
+              746
+            ],
+            [
+              0,
+              0,
+              7154
+            ]
+          ]
+        },
+        "fit_seconds": 0.018155815021600574,
+        "macro_f1": 0.2966925868325557,
+        "per_class": {
+          "no_idea": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "support": 1021
+          },
+          "not_recommended": {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "support": 746
+          },
+          "recommended": {
+            "f1": 0.8900777604976672,
+            "precision": 0.8019280349736576,
+            "recall": 1.0,
+            "support": 7154
+          }
+        },
+        "prediction_seconds": 0.0008608949719928205
+      },
+      "text_tfidf_logistic_regression": {
+        "accuracy": 0.7841049209729851,
+        "configuration": {
+          "feature_fields": [
+            "title",
+            "body"
+          ],
+          "logistic_regression": {
+            "C": 1.0,
+            "class_weight": "balanced",
+            "max_iter": 1000,
+            "random_state": 20260830,
+            "solver": "lbfgs"
+          },
+          "vectorizer": {
+            "analyzer": "char_wb",
+            "min_df": 2,
+            "ngram_range": [
+              3,
+              5
+            ],
+            "sublinear_tf": true
+          }
+        },
+        "confusion_matrix": {
+          "label_order": [
+            "no_idea",
+            "not_recommended",
+            "recommended"
+          ],
+          "orientation": "rows=true, columns=predicted",
+          "values": [
+            [
+              578,
+              252,
+              191
+            ],
+            [
+              183,
+              526,
+              37
+            ],
+            [
+              1014,
+              249,
+              5891
+            ]
+          ]
+        },
+        "fit_seconds": 23.033175721007865,
+        "macro_f1": 0.6314863626586611,
+        "per_class": {
+          "no_idea": {
+            "f1": 0.413447782546495,
+            "precision": 0.3256338028169014,
+            "recall": 0.5661116552399609,
+            "support": 1021
+          },
+          "not_recommended": {
+            "f1": 0.5933446136491822,
+            "precision": 0.5121713729308666,
+            "recall": 0.7050938337801609,
+            "support": 746
+          },
+          "recommended": {
+            "f1": 0.8876666917803059,
+            "precision": 0.9627390096420984,
+            "recall": 0.8234554095610848,
+            "support": 7154
+          }
+        },
+        "prediction_seconds": 0.8795851559843868
+      }
+    },
+    "split": {
+      "algorithm": "StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=20260830); first valid fold",
+      "product_id_overlap_count": 0,
+      "seed": 20260830,
+      "test_class_distribution": {
+        "no_idea": 1021,
+        "not_recommended": 746,
+        "recommended": 7154
+      },
+      "test_product_count": 176,
+      "test_rows": 8921,
+      "train_class_distribution": {
+        "no_idea": 4086,
+        "not_recommended": 2984,
+        "recommended": 28617
+      },
+      "train_product_count": 689,
+      "train_rows": 35687
+    },
+    "target": {
+      "field": "recommendation_status",
+      "rule": "exclude null, non-string, and blank/whitespace values; preserve valid strings verbatim"
+    }
+  },
+  "requirement_to_evidence": [
+    {
+      "evidence": "data/processed/sunscreen_mvp/v1/manifest.json",
+      "requirement": "scoped data and prices",
+      "status": "verified"
+    },
+    {
+      "evidence": "reports/evaluation/sunscreen_mvp_evaluation.json",
+      "requirement": "fixed retrieval correctness and determinism",
+      "status": "verified"
+    },
+    {
+      "evidence": "stored evidence-pair and optional live-audit report",
+      "requirement": "grounding/citation audit",
+      "status": "verified offline; live status recorded separately"
+    },
+    {
+      "evidence": "reports/evaluation/recommendation_status_evaluation.json",
+      "requirement": "recommendation_status Macro F1",
+      "status": "verified"
+    },
+    {
+      "evidence": "opt-in sunscreen_live_audit report",
+      "requirement": "live answer quality, tokens, cost",
+      "status": "recorded when live report exists; human scores remain null"
+    }
+  ],
+  "resource_scope_limitations": [
+    "Sunscreen category only; no generalization claim.",
+    "No raw CSV scan, embedding rebuild, live API call, or dataset mutation in this consolidation.",
+    "No stored full test-count command evidence.",
+    "Live Groq cost/usage requires explicit user audit."
+  ],
+  "retrieval": {
+    "baseline_case_ids": [
+      "oily",
+      "dry",
+      "colorless",
+      "light",
+      "value",
+      "brand",
+      "price",
+      "minimum_evidence",
+      "no_result",
+      "comparison"
+    ],
+    "case_count_contract": {
+      "baseline": 10,
+      "semantic": 2,
+      "total": 12
+    },
+    "comparison_note": "Comparison records observed fixed-case outcomes; it makes no improvement claim.",
+    "fixed_search_case_results": {
+      "brand": {
+        "channels": {
+          "hybrid": {
+            "product_ids": [
+              981863,
+              1798654,
+              981853,
+              7686853,
+              981333,
+              981870,
+              981125,
+              981872,
+              981091,
+              1093326
+            ],
+            "retrieval_mode": "hybrid"
+          },
+          "lexical": {
+            "product_ids": [
+              981863,
+              1798654,
+              981853,
+              7686853,
+              981333,
+              981870,
+              981125,
+              981872,
+              981091,
+              1093326
+            ],
+            "retrieval_mode": "lexical"
+          },
+          "semantic": {
+            "product_ids": [],
+            "retrieval_mode": "semantic"
+          }
+        },
+        "deterministic": true
+      },
+      "colorless": {
+        "channels": {
+          "hybrid": {
+            "product_ids": [
+              773191,
+              11987519,
+              81208,
+              83401,
+              2084318,
+              4398383,
+              81259,
+              7822296,
+              81284,
+              8719727
+            ],
+            "retrieval_mode": "hybrid"
+          },
+          "lexical": {
+            "product_ids": [
+              11987519,
+              83401,
+              4398383,
+              7822296,
+              8719727,
+              226782,
+              773185,
+              773197,
+              289763,
+              821737
+            ],
+            "retrieval_mode": "lexical"
+          },
+          "semantic": {
+            "product_ids": [
+              773191,
+              81208,
+              2084318,
+              81259,
+              81284,
+              81226,
+              117854,
+              5233687,
+              117214,
+              81141
+            ],
+            "retrieval_mode": "semantic"
+          }
+        },
+        "deterministic": true
+      },
+      "dry": {
+        "channels": {
+          "hybrid": {
+            "product_ids": [
+              5233687,
+              9779340,
+              81136,
+              289763,
+              1442323,
+              6909950,
+              81159,
+              1065000,
+              81128,
+              9264062
+            ],
+            "retrieval_mode": "hybrid"
+          },
+          "lexical": {
+            "product_ids": [
+              9779340,
+              289763,
+              6909950,
+              1065000,
+              9264062,
+              6227609,
+              6696784,
+              5431902,
+              7121384,
+              83401
+            ],
+            "retrieval_mode": "lexical"
+          },
+          "semantic": {
+            "product_ids": [
+              5233687,
+              81136,
+              1442323,
+              81159,
+              81128,
+              6507438,
+              76150,
+              1640269,
+              81208,
+              6833752
+            ],
+            "retrieval_mode": "semantic"
+          }
+        },
+        "deterministic": true
+      },
+      "light": {
+        "channels": {
+          "hybrid": {
+            "product_ids": [
+              2084318,
+              11987519,
+              731793,
+              4398383,
+              2084297,
+              7357889,
+              1065000,
+              6507438,
+              81128,
+              977089
+            ],
+            "retrieval_mode": "hybrid"
+          },
+          "lexical": {
+            "product_ids": [
+              11987519,
+              4398383,
+              7357889,
+              1065000,
+              977089,
+              6028480,
+              226782,
+              6028466,
+              1612118,
+              1798654
+            ],
+            "retrieval_mode": "lexical"
+          },
+          "semantic": {
+            "product_ids": [
+              2084318,
+              731793,
+              2084297,
+              6507438,
+              81128,
+              7564692,
+              11303373,
+              2084251,
+              82004,
+              117217
+            ],
+            "retrieval_mode": "semantic"
+          }
+        },
+        "deterministic": true
+      },
+      "minimum_evidence": {
+        "channels": {
+          "hybrid": {
+            "product_ids": [
+              1019073,
+              5233687,
+              81141,
+              11987519,
+              2192931,
+              4127525,
+              289763,
+              831818,
+              81909,
+              9515014
+            ],
+            "retrieval_mode": "hybrid"
+          },
+          "lexical": {
+            "product_ids": [
+              1019073,
+              11987519,
+              2192931,
+              289763,
+              9515014,
+              3022720,
+              3074140,
+              706241,
+              9264062,
+              11115802
+            ],
+            "retrieval_mode": "lexical"
+          },
+          "semantic": {
+            "product_ids": [
+              5233687,
+              81141,
+              4127525,
+              831818,
+              81909,
+              6507438,
+              81159,
+              81758,
+              202069,
+              2172239
+            ],
+            "retrieval_mode": "semantic"
+          }
+        },
+        "deterministic": true
+      },
+      "no_result": {
+        "channels": {
+          "hybrid": {
+            "product_ids": [
+              773191,
+              2084318,
+              81259,
+              81141,
+              7247694,
+              1644747,
+              2084297,
+              81149,
+              9095524,
+              82004
+            ],
+            "retrieval_mode": "hybrid"
+          },
+          "lexical": {
+            "product_ids": [],
+            "retrieval_mode": "lexical"
+          },
+          "semantic": {
+            "product_ids": [
+              773191,
+              2084318,
+              81259,
+              81141,
+              7247694,
+              1644747,
+              2084297,
+              81149,
+              9095524,
+              82004
+            ],
+            "retrieval_mode": "semantic"
+          }
+        },
+        "deterministic": true
+      },
+      "oily": {
+        "channels": {
+          "hybrid": {
+            "product_ids": [
+              2331113,
+              5664135,
+              81208,
+              289763,
+              117867,
+              6909950,
+              81128,
+              8823324,
+              1065000,
+              6833752
+            ],
+            "retrieval_mode": "hybrid"
+          },
+          "lexical": {
+            "product_ids": [
+              2331113,
+              289763,
+              6909950,
+              8823324,
+              1065000,
+              7501538,
+              9264062,
+              9170872,
+              977089,
+              6227609
+            ],
+            "retrieval_mode": "lexical"
+          },
+          "semantic": {
+            "product_ids": [
+              5664135,
+              81208,
+              117867,
+              81128,
+              6833752,
+              117848,
+              981870,
+              6507438,
+              734627,
+              5233687
+            ],
+            "retrieval_mode": "semantic"
+          }
+        },
+        "deterministic": true
+      },
+      "price": {
+        "channels": {
+          "hybrid": {
+            "product_ids": [
+              81909,
+              5233687,
+              11987519,
+              81141,
+              3022720,
+              3074140,
+              4127525,
+              831818,
+              977089,
+              2188800
+            ],
+            "retrieval_mode": "hybrid"
+          },
+          "lexical": {
+            "product_ids": [
+              11987519,
+              3022720,
+              3074140,
+              977089,
+              2188800,
+              7121384,
+              1484427,
+              2084226,
+              81909,
+              9102267
+            ],
+            "retrieval_mode": "lexical"
+          },
+          "semantic": {
+            "product_ids": [
+              5233687,
+              81141,
+              4127525,
+              831818,
+              81909,
+              6507438,
+              81159,
+              81758,
+              2172239,
+              831817
+            ],
+            "retrieval_mode": "semantic"
+          }
+        },
+        "deterministic": true
+      },
+      "semantic_paraphrase_lightweight": {
+        "channels": {
+          "hybrid": {
+            "product_ids": [
+              81149,
+              715340,
+              2084297,
+              8477595,
+              81159,
+              781332,
+              81141,
+              134582,
+              2084318,
+              8026601
+            ],
+            "retrieval_mode": "hybrid"
+          },
+          "lexical": {
+            "product_ids": [
+              715340,
+              8477595,
+              781332,
+              134582,
+              8026601,
+              6267904,
+              1023681,
+              1023904,
+              183271,
+              331911
+            ],
+            "retrieval_mode": "lexical"
+          },
+          "semantic": {
+            "product_ids": [
+              81149,
+              2084297,
+              81159,
+              81141,
+              2084318,
+              1644745,
+              6267901,
+              773199,
+              1645222,
+              4423755
+            ],
+            "retrieval_mode": "semantic"
+          }
+        },
+        "deterministic": true
+      },
+      "semantic_paraphrase_no_white_cast": {
+        "channels": {
+          "hybrid": {
+            "product_ids": [
+              781332,
+              81141,
+              5715618,
+              81159,
+              3022720,
+              81149,
+              1110394,
+              81284,
+              8078624,
+              847159
+            ],
+            "retrieval_mode": "hybrid"
+          },
+          "lexical": {
+            "product_ids": [
+              3022720,
+              781332,
+              1110394,
+              8078624,
+              9321281,
+              735953,
+              1093326,
+              5715618,
+              82002,
+              81141
+            ],
+            "retrieval_mode": "lexical"
+          },
+          "semantic": {
+            "product_ids": [
+              81159,
+              81141,
+              81149,
+              81284,
+              847159,
+              2897189,
+              4170477,
+              5715618,
+              781332,
+              81128
+            ],
+            "retrieval_mode": "semantic"
+          }
+        },
+        "deterministic": true
+      },
+      "value": {
+        "channels": {
+          "hybrid": {
+            "product_ids": [
+              81141,
+              11987519,
+              81159,
+              1019073,
+              82004,
+              301067,
+              81226,
+              301139,
+              5431902,
+              6507438
+            ],
+            "retrieval_mode": "hybrid"
+          },
+          "lexical": {
+            "product_ids": [
+              11987519,
+              1019073,
+              301067,
+              301139,
+              5431902,
+              7357853,
+              706241,
+              9529945,
+              9295513,
+              5106586
+            ],
+            "retrieval_mode": "lexical"
+          },
+          "semantic": {
+            "product_ids": [
+              81141,
+              81159,
+              82004,
+              81226,
+              6507438,
+              5233687,
+              81259,
+              2084226,
+              81284,
+              4455832
+            ],
+            "retrieval_mode": "semantic"
+          }
+        },
+        "deterministic": true
+      }
+    },
+    "latency": {
+      "per_channel_case_latency_ms": {
+        "count": 33,
+        "max": 8766.229,
+        "mean": 652.4689393939393,
+        "min": 24.322
+      },
+      "semantic_index_load_seconds": 0.44631135900272056,
+      "whole_hybrid_evaluation_max_rss_kib": "unavailable: not recorded in stored report",
+      "whole_hybrid_evaluation_runtime_seconds": "unavailable: not recorded in stored report"
+    },
+    "ranking_quality": "No human relevance labels are available; Recall@K, MRR, nDCG, and statistical Hybrid-superiority claims are unavailable. Fixed cases establish functional correctness and repeatability only.",
+    "semantic_case_ids": [
+      "semantic_paraphrase_lightweight",
+      "semantic_paraphrase_no_white_cast"
+    ]
+  },
+  "scope": {
+    "category": {
+      "category1": "مراقبت پوست",
+      "category2": "کرم ضد آفتاب"
+    },
+    "published_artifacts_only": true
+  },
+  "scoped_build": {
+    "historical_price": {
+      "label": "historical inferred IRR",
+      "method": "lowest valid positive price_raw per product"
+    },
+    "max_rss_kib": 775596,
+    "rows": {
+      "brands": 175,
+      "buyer_comment_rows": 50275,
+      "canonical_comment_rows": 53365,
+      "conflict_alternative_count": 133,
+      "conflicting_comment_id_count": 133,
+      "exact_clean_duplicate_rows_removed": 0,
+      "exact_raw_duplicate_rows_removed": 24,
+      "historical_price_coverage_pct": 99.80916030534351,
+      "matching_candidates_retained": 53498,
+      "non_empty_body_rows": 53517,
+      "products_with_historical_price": 1046,
+      "products_with_raw_comments": 892,
+      "raw_matching_comment_rows": 53522,
+      "repeated_comment_id_count": 133,
+      "repeated_comment_id_excess_rows": 133,
+      "selected_products": 1048
+    },
+    "runtime_seconds": 126.38945150998188
+  },
+  "semantic_artifact": {
+    "dimension": 384,
+    "dtype": "float32",
+    "embedding_model": "intfloat/multilingual-e5-small",
+    "max_rss_kib": 2621812,
+    "normalization": "l2",
+    "outputs": {
+      "comment_embedding_metadata.parquet": {
+        "bytes": 1097451,
+        "sha256": "3203a80000c54730f196d3493e5b5662472dee02ade34d7b3565fca86e5cf0d6"
+      },
+      "comment_embeddings.npy": {
+        "bytes": 81968768,
+        "sha256": "7b0e873b19e1b5e6a3eedb6d5d8f2e9bf529516e1408bc5535ead4acde6d5b71"
+      }
+    },
+    "record_count": 53365,
+    "runtime_seconds": 3579.3503998679807
+  }
+}
