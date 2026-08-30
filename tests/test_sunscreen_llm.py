@@ -78,6 +78,8 @@ def test_retrieval_context_is_bounded_and_score_independent() -> None:
     )
     assert "score_components" not in str(context)
     assert "skin_type" not in str(context)
+    assert context["products"][0]["historical_price_display"] == "1,000 ریال (تاریخی، نه قیمت فعلی)"
+    assert llm.historical_price_display(6_998_000) == "6,998,000 ریال (تاریخی، نه قیمت فعلی)"
 
 
 def test_grounded_instruction_citation_and_mocked_groq_call(monkeypatch) -> None:  # type: ignore[no-untyped-def]
@@ -237,18 +239,13 @@ def test_second_length_response_uses_complete_non_llm_fallback(monkeypatch) -> N
     assert calls == 2
 
 
-def test_citation_normalization_and_bounded_appendix() -> None:
+def test_citation_normalization_keeps_inline_citations_without_an_appendix() -> None:
     context = llm.retrieval_context("سبک", _retrieval(products=3, evidence=3))
     normalized = llm.normalize_citations("نظر [COMMENT_ID 100، ردیف 1000]", context)
     assert normalized == "نظر [نظر 100، ردیف 1000]"
     assert "COMMENT_ID" not in normalized
-    referenced = "؛ ".join(
-        f"نظر شماره {comment_id}" for comment_id in llm._citations_by_comment_id(context)
-    )
-    appendix = llm.citation_appendix(referenced, context)
-    assert appendix.count("[نظر ") == llm.MAX_APPENDED_CITATIONS
-    assert appendix.count("[نظر 100، ردیف 1000]") == 1
-    assert llm.citation_appendix(normalized, context) == ""
+    assert llm.complete_citations(normalized, context) == normalized
+    assert "شواهد قابل بررسی" not in llm.complete_citations(normalized, context)
 
 
 def test_citation_completion_appends_only_bounded_supplied_evidence() -> None:
@@ -259,19 +256,38 @@ def test_citation_completion_appends_only_bounded_supplied_evidence() -> None:
     assert "[نظر 100، ردیف 1000]" in completed
 
 
+def test_local_recommendation_quotes_retrieved_evidence_with_grounded_citations() -> None:
+    context = llm.retrieval_context("سبک", _retrieval(products=2, evidence=1))
+    answer = llm.deterministic_fallback(context, "missing_api_key")
+    assert "[نظر 100، ردیف 1000]" in answer
+    assert "متن متن" in answer
+    assert "محدودیت شواهد" not in answer
+
+
 def test_instruction_retains_grounding_and_concise_complete_safety_contract() -> None:
     for term in (
-        "فقط از کاتالوگ",
-        "فقط نامزدهای",
+        "فرانمای محصول",
+        "معیارهای خودِ پرسش",
+        "ناسازگارند",
+        "فقدان شواهد",
         "به کاربران نسبت بده",
         "سازگاری پزشکی",
-        "۱۲۰ تا ۲۲۰",
-        "حداکثر سه بولت",
-        "حداکثر دو ارجاع",
-        "جمله‌های کامل",
+        "۹۰ تا ۱۷۰",
+        "historical_price_display",
         "COMMENT_ID",
     ):
         assert term in llm.SYSTEM_INSTRUCTION
+    assert "هشدار کلی و نامرتبط" in llm.SYSTEM_INSTRUCTION
+
+
+def test_generation_prompt_requires_evidence_synthesis_not_product_quote_listing() -> None:
+    for phrase in (
+        "تفسیر و مقایسه کن",
+        "تعارض را روشن توضیح بده",
+        "همان کمبود را طبیعی و مشخص بگو",
+        "نامزد روشنی وجود ندارد",
+    ):
+        assert phrase in llm.SYSTEM_INSTRUCTION
 
 
 @pytest.mark.parametrize(
@@ -332,7 +348,10 @@ def test_safe_current_price_disclaimers_are_accepted_as_groq_output(  # type: ig
         def create(self, **_kwargs: object) -> SimpleNamespace:
             return SimpleNamespace(
                 choices=[
-                    SimpleNamespace(message=SimpleNamespace(content=statement), finish_reason="stop")
+                    SimpleNamespace(
+                        message=SimpleNamespace(content=f"{statement} [نظر 100، ردیف 1000]"),
+                        finish_reason="stop",
+                    )
                 ]
             )
 

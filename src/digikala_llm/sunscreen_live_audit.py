@@ -67,9 +67,7 @@ def _completion(client: Any, context: dict[str, Any], max_tokens: int, *, retry:
     )
 
 
-def _grounding(
-    answer: str, context: dict[str, Any], *, response_complete: bool
-) -> dict[str, Any]:
+def _grounding(answer: str, context: dict[str, Any], *, response_complete: bool) -> dict[str, Any]:
     citations = [
         {"comment_id": int(comment), "canonical_source_row_number": int(row)}
         for comment, row in _CITATION.findall(answer)
@@ -80,19 +78,12 @@ def _grounding(
         for group in (
             (product.get("user_review_evidence", []),)
             if context["kind"] == "recommendation"
-            else (
-                product.get("positive_user_review_evidence", []),
-                product.get("critical_user_review_evidence", []),
-            )
+            else (product.get("positive_user_review_evidence", []), product.get("critical_user_review_evidence", []))
         )
         for item in group
     }
     unsafe_medical = bool(re.search(r"(?:تشخیص|درمان|تجویز)", answer))
-    valid = [
-        item
-        for item in citations
-        if (item["comment_id"], item["canonical_source_row_number"]) in supplied
-    ]
+    valid = [item for item in citations if (item["comment_id"], item["canonical_source_row_number"]) in supplied]
     citation_required = bool(supplied)
     citation_presence_passed = not citation_required or bool(citations)
     citation_membership_passed = len(valid) == len(citations)

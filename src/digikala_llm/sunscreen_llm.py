@@ -58,17 +58,25 @@ _SAFE_CURRENT_PRICE_DISCLAIMER = re.compile(
     flags=re.IGNORECASE,
 )
 
-SYSTEM_INSTRUCTION = """تو دستیار انتخاب ضدآفتاب هستی و فقط به فارسی پاسخ می‌دهی.
-فقط از کاتالوگ و شواهدی که در پیام کاربر آمده استفاده کن؛ محصول، قیمت، SPF، سازگاری با نوع پوست،
-بافت یا ادعای پزشکی جدید نساز. فقط مقدارهای عرضه‌شدهٔ «قیمت تاریخی استنباط‌شده به ریال» را ذکر کن؛
-قیمت، بازار یا تغییرات قیمت در زمان حال را نه نتیجه‌گیری کن، نه نام ببر و نه مقایسه کن. هر ادعای
-برگرفته از نظر را به کاربران نسبت بده و با قالب دقیق
-[نظر COMMENT_ID، ردیف SOURCE_ROW] ارجاع بده و هرگز برچسب انگلیسی COMMENT_ID ننویس. فقط نامزدهای
-داده‌شده را مقایسه کن. ادعای بافت یا مناسب‌بودن را فقط به کاربران نسبت بده و تشخیص، سازگاری پزشکی
-یا قطعیت اعلام نکن. اگر شواهد برای پاسخ کافی نیست، صادقانه کمبود شواهد را بگو. پاسخ را در ۱۲۰ تا ۲۲۰
-کلمه نگه دار: یک مقدمهٔ کوتاه با جمله‌های کامل، حداکثر سه بولت فشردهٔ محصول (برای هر محصول حداکثر دو ارجاع)، و
-یک جملهٔ کوتاه دربارهٔ محدودیت شواهد. جدول نساز و شواهد یا محصول را تکرار نکن."""
-RETRY_BREVITY_INSTRUCTION = "پاسخ پیشین کامل نشد. این بار در ۱۲۰ تا ۲۲۰ کلمه، فشرده و کامل پاسخ بده؛ از جدول و تکرار پرهیز کن."
+SYSTEM_INSTRUCTION = """تو دستیار پیشنهاد محصول هستی و فقط به فارسی پاسخ می‌دهی.
+فقط از کاتالوگ و شواهد بازیابی‌شده در پیام کاربر استفاده کن. میان «فرانمای محصول» (عنوان، برند،
+تعداد نظر و قیمت تاریخیِ عرضه‌شده) و «تجربهٔ کاربران» در نظرها فرق بگذار. برای معیارهای خودِ پرسش
+کاربر، هر نامزد را تفسیر و مقایسه کن، نه اینکه صرفاً نام محصول و نقل‌قول‌ها را فهرست کنی.
+
+هر ادعای دربارهٔ بافت، کارکرد، سازگاری یا تجربه را صریحاً به کاربران نسبت بده و با قالب دقیق
+[نظر COMMENT_ID، ردیف SOURCE_ROW] ارجاع بده؛ هرگز برچسب انگلیسی COMMENT_ID ننویس. اگر شواهد دو
+نظر دربارهٔ یک معیار با هم ناسازگارند، همان تعارض را روشن توضیح بده و آن را به ادعای قطعی تبدیل نکن.
+اگر شواهد بازیابی‌شده یک معیار را پوشش نمی‌دهند، دقیقاً همان کمبود را طبیعی و مشخص بگو؛ فقدان شواهد
+نشانهٔ مثبت نیست. در پایان فقط وقتی یک نامزد را نزدیک‌تر بدان که شواهد عرضه‌شده آن را پشتیبانی می‌کند؛
+در غیر این صورت صادقانه بگو نامزد روشنی وجود ندارد.
+
+محصول، ویژگی، ماده، SPF، اثر پزشکی یا سازگاری جدید نساز؛ تشخیص، درمان، تضمین سازگاری پزشکی یا قطعیت
+اعلام نکن. قیمت، بازار یا تغییرات قیمت در زمان حال را
+نتیجه‌گیری یا مقایسه نکن. اگر لازم است قیمت را ذکر کنی، فقط مقدار `historical_price_display` عرضه‌شده
+را عیناً بنویس و هرگز عدد قیمت را دوباره قالب‌بندی نکن. پاسخ را در ۹۰ تا ۱۷۰ کلمه، در یک یا دو پاراگراف
+روان بنویس؛ حداکثر سه ارجاعِ عرضه‌شده را بیاور. جدول، فهرست تکراری محصول، بخش «شواهد قابل بررسی»، یا
+هشدار کلی و نامرتبط دربارهٔ محدودیت شواهد نساز."""
+RETRY_BREVITY_INSTRUCTION = "پاسخ پیشین کامل نشد. این بار در ۹۰ تا ۱۷۰ کلمه، روان و کامل پاسخ بده؛ معیارهای پرسش، تعارض یا کمبود شواهد، و نتیجهٔ محتاطانه را حفظ کن."
 
 
 def llm_model() -> str:
@@ -91,6 +99,11 @@ def _bounded_evidence(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ]
 
 
+def historical_price_display(value: Any) -> str:
+    """Canonical historical-price string for generation; the stored value remains numeric."""
+    return "نامشخص" if value is None else f"{int(value):,} ریال (تاریخی، نه قیمت فعلی)"
+
+
 def retrieval_context(query: str, retrieval: dict[str, Any]) -> dict[str, Any]:
     """Make the only candidate/evidence payload the LLM is allowed to see."""
     products = []
@@ -101,6 +114,9 @@ def retrieval_context(query: str, retrieval: dict[str, Any]) -> dict[str, Any]:
                 "title": row["title"],
                 "brand": row.get("brand"),
                 "historical_price_inferred_irr": row.get("historical_price_inferred_irr"),
+                "historical_price_display": historical_price_display(
+                    row.get("historical_price_inferred_irr")
+                ),
                 "historical_price_label": row["historical_price_label"],
                 "canonical_review_count": row["total_canonical_review_count"],
                 "user_review_evidence": _bounded_evidence(row.get("evidence", [])),
@@ -119,6 +135,9 @@ def comparison_context(query: str | None, comparison: dict[str, Any]) -> dict[st
                 "title": row["title"],
                 "brand": row.get("brand"),
                 "historical_price_inferred_irr": row.get("historical_price_inferred_irr"),
+                "historical_price_display": historical_price_display(
+                    row.get("historical_price_inferred_irr")
+                ),
                 "historical_price_label": row["historical_price_label"],
                 "canonical_review_count": row["canonical_review_count"],
                 "buyer_review_count": row["buyer_review_count"],
@@ -141,7 +160,7 @@ def comparison_context(query: str | None, comparison: dict[str, Any]) -> dict[st
 
 
 def _price(value: Any) -> str:
-    return "نامشخص" if value is None else f"{int(value):,} ریال (تاریخی، نه قیمت فعلی)"
+    return historical_price_display(value)
 
 
 def _citations_by_comment_id(context: dict[str, Any]) -> dict[str, str]:
@@ -151,29 +170,21 @@ def _citations_by_comment_id(context: dict[str, Any]) -> dict[str, str]:
         evidence_groups = (
             (product.get("user_review_evidence", []),)
             if context["kind"] == "recommendation"
-            else (
-                product.get("positive_user_review_evidence", []),
-                product.get("critical_user_review_evidence", []),
-            )
+            else (product.get("positive_user_review_evidence", []), product.get("critical_user_review_evidence", []))
         )
-        for evidence_group in evidence_groups:
-            for evidence in evidence_group:
-                citation = _citation(evidence)
-                citations.setdefault(str(evidence["comment_id"]), citation)
+        for group in evidence_groups:
+            for evidence in group:
+                citations.setdefault(str(evidence["comment_id"]), _citation(evidence))
     return citations
 
 
 def normalize_citations(text: str, context: dict[str, Any]) -> str:
     """Normalize safe model citation variants without inventing IDs or source rows."""
     citations = _citations_by_comment_id(context)
-
-    def bracketed(match: re.Match[str]) -> str:
-        return f"[نظر {match.group(1)}، ردیف {match.group(2)}]"
-
-    text = _BRACKETED_CITATION.sub(bracketed, text)
-    return _BARE_COMMENT_ID.sub(
-        lambda match: citations.get(match.group(1), match.group(0)), text
+    text = _BRACKETED_CITATION.sub(
+        lambda match: f"[نظر {match.group(1)}، ردیف {match.group(2)}]", text
     )
+    return _BARE_COMMENT_ID.sub(lambda match: citations.get(match.group(1), match.group(0)), text)
 
 
 def citation_appendix(text: str, context: dict[str, Any]) -> str:
@@ -191,12 +202,7 @@ def citation_appendix(text: str, context: dict[str, Any]) -> str:
 
 
 def complete_citations(text: str, context: dict[str, Any]) -> str:
-    """Apply the bounded citation completion used by the displayed answer.
-
-    If the provider omitted visible citation formatting entirely, append only a
-    small, deterministic prefix of the evidence that was already supplied to it.
-    An existing (including invalid) visible citation is left alone for auditing.
-    """
+    """Apply the bounded citation completion used by the displayed answer."""
     appendix = citation_appendix(text, context)
     if appendix:
         return f"{text}\n\n{appendix}"
@@ -209,7 +215,6 @@ def complete_citations(text: str, context: dict[str, Any]) -> str:
 
 
 def finalize_grounded_answer(text: str, context: dict[str, Any]) -> tuple[str | None, str | None]:
-    """Return the exact safe, citation-completed text production would display."""
     normalized = normalize_citations(text, context)
     if has_unsupported_current_price_claim(normalized):
         return None, "unsupported_current_price_claim"
@@ -267,7 +272,7 @@ def deterministic_fallback(context: dict[str, Any], reason: str) -> str:
             if evidence:
                 lines.append(f"نظر کاربر: «{evidence[0]['excerpt']}» {_citation(evidence[0])}")
         return "\n\n".join(lines)
-    lines = [label, "کاندیداها با بازیابی قطعی انتخاب شده‌اند؛ قیمت‌ها تاریخی‌اند، نه قیمت فعلی."]
+    lines = [label]
     for product in products:
         line = (
             f"{product['title']} ({product.get('brand') or 'برند نامشخص'}) — "
