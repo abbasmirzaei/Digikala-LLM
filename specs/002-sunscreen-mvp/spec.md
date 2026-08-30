@@ -82,6 +82,27 @@ counts must be shown separately from retrieved evidence.
 The repository shall provide a simple local presentation flow and a fixed Persian evaluation set
 covering retrieval, comparison, price/brand filtering, unknown attributes, and safety behavior.
 
+### F8 — Hybrid Semantic RAG artifact checkpoint
+
+The project may build a separate CPU-only semantic artifact from only the published sunscreen
+products and canonical comments. It shall embed exactly 53,365 canonical comments with
+`intfloat/multilingual-e5-small`, using `passage: ` prefixes and normalized float32 vectors. Each
+vector row shall map one-to-one to `product_id`, `comment_id`, and
+`canonical_source_row_number`; publication shall be atomic and include checksums, a manifest, and
+`_SUCCESS`. This checkpoint does not alter lexical retrieval, UI, comparison, or LLM behavior.
+
+### F9 — Deterministic hybrid semantic retrieval
+
+The completed `semantic_v1` artifact is an optional, strictly validated retrieval channel. The
+application shall require its manifest, `_SUCCESS`, expected model/version properties, aligned
+metadata, and recorded output checksums before memory-mapping the float32 matrix. Queries use the
+cached CPU `intfloat/multilingual-e5-small` model with `query: ` and L2 normalization. Exact
+dot-product comment search is aggregated per product by the best bounded evidence, then fused
+with unchanged lexical product ranks using RRF with `k=60`. Ties resolve by product ID then
+canonical source provenance. Failed semantic loading or encoding must explicitly use lexical
+fallback without exposing exceptions to ordinary users. Only bounded provenance-bearing evidence
+may reach Groq; no vectors or raw scores may enter prompts or the normal UI.
+
 ## Safety and truthfulness requirements
 
 - Never call a historical price “current,” “today,” “live,” or imply stock or availability.
@@ -103,6 +124,7 @@ covering retrieval, comparison, price/brand filtering, unknown attributes, and s
 - LLM fine-tuning
 - Scanning/materializing all 6.15m comments after the scoped build
 - Medical recommendation, diagnosis, or treatment guidance
+- Raw-CSV access or a sunscreen-dataset rebuild by the semantic artifact builder
 
 ## Measurable acceptance criteria
 
@@ -126,6 +148,8 @@ covering retrieval, comparison, price/brand filtering, unknown attributes, and s
    wording, and mark unsupported attributes as unknown or absent.
 10. The documented local demo starts from the generated scoped artifacts and completes a fixed
     two-product Persian comparison without network access or a GPU.
+11. Hybrid evaluation records lexical-only, semantic-only, and RRF-fused product IDs, bounded
+    evidence, latency, and repeated-run equality for fixed lexical and Persian paraphrase cases.
 
 ## Constraints and decisions
 

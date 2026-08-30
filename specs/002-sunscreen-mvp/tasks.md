@@ -50,8 +50,16 @@
 
 ## Optional tasks — drop first under deadline pressure
 
-- [ ] **O1 — Offline embedding/hybrid retrieval experiment.** Do only after lexical baseline and
-  evaluation are passing; it must not replace the local baseline demo.
+- [x] **O1a — Semantic artifact checkpoint.** From published sunscreen artifacts only, embed the
+  53,365 canonical comments with `intfloat/multilingual-e5-small`; use `passage: ` prefixes,
+  normalized float32 vectors, explicit vector/comment provenance, atomic staging, checksums, and
+  `_SUCCESS`. This task changes no retrieval behavior.
+- [x] **O1b — Hybrid retrieval.** Validate manifest/_SUCCESS/checksums and mmap metadata, cache
+  CPU query embedding, retrieve exact normalized dot-product comment hits, use bounded max-hit
+  product aggregation, and fuse lexical/dense ranks with RRF `k=60` plus stable provenance ties.
+- [x] **O1c — Hybrid evaluation and safeguards.** Add low-overlap Persian paraphrases; compare
+  lexical, semantic, and hybrid IDs/evidence/latency/determinism; assert lexical fallback and
+  prohibit vectors or raw scores from Groq context and normal UI.
 - [ ] **O2 — Kaggle GPU preparation.** Supply an optional reproducible experiment setup only; no
   hosted runtime is required for final presentation.
 - [ ] **O3 — Extra visual polish.** Improve presentation styling only after the scripted demo and

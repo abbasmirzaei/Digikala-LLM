@@ -8,3 +8,5 @@
 {"id":"minimum_evidence","kind":"search","query":"ضد آفتاب","filters":{"min_review_evidence":20},"expect_results":true}
 {"id":"no_result","kind":"search","query":"qxzvnonexistent","expect_results":false}
 {"id":"comparison","kind":"comparison","product_ids":[2331113,289763],"query":"برای پوست چرب"}
+{"id":"semantic_paraphrase_lightweight","kind":"search","query":"روی پوست احساس سنگینی نداشته باشد","expect_results":true,"semantic_only":true}
+{"id":"semantic_paraphrase_no_white_cast","kind":"search","query":"اثر سفید روی صورت نگذارد","expect_results":true,"semantic_only":true}

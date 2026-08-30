@@ -35,11 +35,31 @@ def _write_cases(path: Path) -> None:
     path.write_text("\n".join(json.dumps(case) for case in cases) + "\n", encoding="utf-8")
 
 
-def test_fixed_evaluation_set_has_ten_unique_valid_cases() -> None:
-    cases = [json.loads(line) for line in evaluation.DEFAULT_CASES.read_text(encoding="utf-8").splitlines() if line]
-    assert len(cases) == 10
-    assert len({case["id"] for case in cases}) == 10
+def test_fixed_evaluation_set_has_ten_baseline_and_two_semantic_cases() -> None:
+    cases = [
+        json.loads(line)
+        for line in evaluation.DEFAULT_CASES.read_text(encoding="utf-8").splitlines()
+        if line
+    ]
+    baseline_ids = {
+        "oily", "dry", "colorless", "light", "value", "brand", "price",
+        "minimum_evidence", "no_result", "comparison",
+    }
+    semantic_ids = {
+        "semantic_paraphrase_lightweight", "semantic_paraphrase_no_white_cast",
+    }
+    ids = {case["id"] for case in cases}
+    assert len(cases) == 12
+    assert len(ids) == 12
+    assert baseline_ids <= ids
+    assert {case["id"] for case in cases if case.get("semantic_only")} == semantic_ids
     assert all(case["kind"] in {"search", "comparison"} for case in cases)
+    assert all(
+        ("query" in case and "expect_results" in case)
+        if case["kind"] == "search"
+        else len(case["product_ids"]) >= 2
+        for case in cases
+    )
 
 
 def test_evaluation_is_deterministic_and_reports_required_schema(tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]

@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from digikala_llm.sunscreen_comparison import SunscreenComparisonService
+from digikala_llm.sunscreen_hybrid import DEFAULT_SEMANTIC_DIR, HybridSunscreenRetriever
 from digikala_llm.sunscreen_retrieval import (
     DEFAULT_DATA_DIR,
     MAX_EXCERPT_CHARS,
@@ -34,6 +35,8 @@ def run_evaluation(
     ]
     outcomes = []
     for case in cases:
+        if case.get("semantic_only"):
+            continue
         started = time.perf_counter()
         failures = []
         if case["kind"] == "search":
@@ -90,29 +93,59 @@ def run_evaluation(
     }
 
 
+def run_retrieval_comparison(
+    data_dir: Path | str = DEFAULT_DATA_DIR,
+    cases_path: Path | str = DEFAULT_CASES,
+    semantic_dir: Path | str = DEFAULT_SEMANTIC_DIR,
+) -> dict[str, Any]:
+    """Record deterministic lexical/semantic/hybrid comparison without claiming uplift."""
+    retriever = HybridSunscreenRetriever(SunscreenLexicalIndex(data_dir), semantic_dir)
+    cases = [json.loads(line) for line in Path(cases_path).read_text(encoding="utf-8").splitlines() if line]
+    outcomes = []
+    for case in cases:
+        if case["kind"] != "search":
+            continue
+        channels, repeatable = {}, True
+        for mode in ("lexical", "semantic", "hybrid"):
+            started = time.perf_counter()
+            result = retriever.search(case["query"], mode=mode, **case.get("filters", {}))
+            again = retriever.search(case["query"], mode=mode, **case.get("filters", {}))
+            channels[mode] = {
+                "retrieval_mode": result["retrieval_mode"],
+                "product_ids": [row["product_id"] for row in result["results"]],
+                "evidence": [[{"comment_id": e["comment_id"], "canonical_source_row_number": e["canonical_source_row_number"]} for e in row["evidence"]] for row in result["results"]],
+                "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+            }
+            repeatable = repeatable and result == again
+        outcomes.append({"id": case["id"], "deterministic": repeatable, "channels": channels})
+    return {"note": "Comparison records observed fixed-case outcomes; it makes no improvement claim.", "semantic_load_seconds": None if retriever.semantic is None else retriever.semantic.load_seconds, "cases": outcomes}
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     p.add_argument("--cases", type=Path, default=DEFAULT_CASES)
     p.add_argument("--output-dir", type=Path, default=Path("reports/evaluation"))
+    p.add_argument("--comparison", action="store_true", help="record lexical, semantic, and hybrid retrieval")
+    p.add_argument("--semantic-dir", type=Path, default=DEFAULT_SEMANTIC_DIR)
     a = p.parse_args(argv)
-    result = run_evaluation(a.data_dir, a.cases)
+    result = run_retrieval_comparison(a.data_dir, a.cases, a.semantic_dir) if a.comparison else run_evaluation(a.data_dir, a.cases)
     a.output_dir.mkdir(parents=True, exist_ok=True)
     (a.output_dir / "sunscreen_mvp_evaluation.json").write_text(
         json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     (a.output_dir / "sunscreen_mvp_evaluation.md").write_text(
         "# Sunscreen MVP evaluation\n\n"
-        + f"Passed: {result['passed']}\n\nFailed: {result['failed']}\n\n"
+        + (f"Passed: {result['passed']}\n\nFailed: {result['failed']}\n\n" if not a.comparison else result["note"] + "\n\n")
         + "\n".join(
-            f"- {x['id']}: {'PASS' if x['passed'] else 'FAIL'} ({x['latency_ms']} ms)"
+            f"- {x['id']}: {'PASS' if (x['deterministic'] if a.comparison else x['passed']) else 'FAIL'}"
             for x in result["cases"]
         )
         + "\n",
         encoding="utf-8",
     )
     print(json.dumps(result, ensure_ascii=False))
-    return 0 if not result["failed"] else 1
+    return 0 if a.comparison or not result["failed"] else 1
 
 
 if __name__ == "__main__":

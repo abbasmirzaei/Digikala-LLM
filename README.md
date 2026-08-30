@@ -24,7 +24,24 @@ after the scoped artifacts exist), run:
 GROQ_MODEL=openai/gpt-oss-20b streamlit run src/digikala_llm/sunscreen_demo.py --server.port=8502
 ```
 
-The builder writes `data/processed/sunscreen_mvp/v1/`; later commands use only published data. Evaluation reports are in `reports/evaluation/`. Screenshot placeholder: capture the local presenter view when needed. Non-goals: all-category platform, embeddings, fine-tuning, live prices, accounts, deployment, and medical recommendation. Optional future work is measured offline embeddings/hybrid retrieval or Kaggle GPU experiments.
+The builder writes `data/processed/sunscreen_mvp/v1/`; later commands use only published data. The
+fixed suite has 12 cases: the original 10 lexical/comparison baseline cases plus 2 documented
+semantic Persian paraphrase cases. Evaluation reports are in `reports/evaluation/`. Screenshot
+placeholder: capture the local presenter view when needed. Non-goals: all-category platform,
+fine-tuning, live prices, accounts, deployment, and medical recommendation.
+
+### Semantic artifact checkpoint
+
+The optional `semantic` extra supports a CPU-only, published-artifact-only embedding build with
+`intfloat/multilingual-e5-small`. It embeds canonical comments with `passage: ` prefixes into
+normalized float32 vectors and writes an atomic, checksummed semantic artifact with explicit
+vector-to-comment provenance. The application validates this artifact before using exact semantic
+retrieval and deterministic hybrid fusion; unavailable semantic retrieval falls back to lexical.
+
+```bash
+pip install -e ".[semantic]"
+python -m digikala_llm.sunscreen_semantic_builder --smoke
+```
 
 The evaluation command tests only deterministic retrieval and comparison semantics, so it never
 requires Groq, API access, or a key. Groq request tests are mocked and assert the bounded context,

@@ -1,117 +1,4514 @@
 {
-  "generation_note": "Deterministic retrieval and comparison are evaluated locally; Groq synthesis is not required.",
-  "summary": {
-    "passed": 10,
-    "failed": 0
-  },
-  "passed": 10,
-  "failed": 0,
+  "note": "Comparison records observed fixed-case outcomes; it makes no improvement claim.",
+  "semantic_load_seconds": 0.44631135900272056,
   "cases": [
     {
       "id": "oily",
-      "status": "pass",
-      "passed": true,
-      "checks": {
-        "failures": []
-      },
-      "failures": [],
-      "latency_ms": 561.365
+      "deterministic": true,
+      "channels": {
+        "lexical": {
+          "retrieval_mode": "lexical",
+          "product_ids": [
+            2331113,
+            289763,
+            6909950,
+            8823324,
+            1065000,
+            7501538,
+            9264062,
+            9170872,
+            977089,
+            6227609
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 33702799,
+                "canonical_source_row_number": 2879870
+              },
+              {
+                "comment_id": 17882172,
+                "canonical_source_row_number": 3045202
+              },
+              {
+                "comment_id": 51494009,
+                "canonical_source_row_number": 2879868
+              }
+            ],
+            [
+              {
+                "comment_id": 21007165,
+                "canonical_source_row_number": 2028410
+              },
+              {
+                "comment_id": 1994093,
+                "canonical_source_row_number": 2197863
+              },
+              {
+                "comment_id": 3039030,
+                "canonical_source_row_number": 2197859
+              }
+            ],
+            [
+              {
+                "comment_id": 49956625,
+                "canonical_source_row_number": 526633
+              },
+              {
+                "comment_id": 44260671,
+                "canonical_source_row_number": 526640
+              },
+              {
+                "comment_id": 49911644,
+                "canonical_source_row_number": 526635
+              }
+            ],
+            [
+              {
+                "comment_id": 39529636,
+                "canonical_source_row_number": 2374761
+              },
+              {
+                "comment_id": 53924625,
+                "canonical_source_row_number": 2035372
+              },
+              {
+                "comment_id": 37810276,
+                "canonical_source_row_number": 2374763
+              }
+            ],
+            [
+              {
+                "comment_id": 4884772,
+                "canonical_source_row_number": 1867253
+              },
+              {
+                "comment_id": 7518406,
+                "canonical_source_row_number": 1867251
+              },
+              {
+                "comment_id": 9847864,
+                "canonical_source_row_number": 1774173
+              }
+            ],
+            [
+              {
+                "comment_id": 39046073,
+                "canonical_source_row_number": 2875450
+              },
+              {
+                "comment_id": 36263161,
+                "canonical_source_row_number": 2875451
+              },
+              {
+                "comment_id": 40013014,
+                "canonical_source_row_number": 2875448
+              }
+            ],
+            [
+              {
+                "comment_id": 48975298,
+                "canonical_source_row_number": 1197465
+              },
+              {
+                "comment_id": 49194316,
+                "canonical_source_row_number": 1197406
+              },
+              {
+                "comment_id": 54058834,
+                "canonical_source_row_number": 1196878
+              }
+            ],
+            [
+              {
+                "comment_id": 45866584,
+                "canonical_source_row_number": 1439161
+              },
+              {
+                "comment_id": 45330284,
+                "canonical_source_row_number": 1532850
+              },
+              {
+                "comment_id": 48698283,
+                "canonical_source_row_number": 1363835
+              }
+            ],
+            [
+              {
+                "comment_id": 9260615,
+                "canonical_source_row_number": 2274758
+              },
+              {
+                "comment_id": 17647328,
+                "canonical_source_row_number": 2201843
+              },
+              {
+                "comment_id": 4350694,
+                "canonical_source_row_number": 2372359
+              }
+            ],
+            [
+              {
+                "comment_id": 30566148,
+                "canonical_source_row_number": 21789
+              },
+              {
+                "comment_id": 31062448,
+                "canonical_source_row_number": 21788
+              },
+              {
+                "comment_id": 32107606,
+                "canonical_source_row_number": 21786
+              }
+            ]
+          ],
+          "latency_ms": 408.764
+        },
+        "semantic": {
+          "retrieval_mode": "semantic",
+          "product_ids": [
+            5664135,
+            81208,
+            117867,
+            81128,
+            6833752,
+            117848,
+            981870,
+            6507438,
+            734627,
+            5233687
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 54406359,
+                "canonical_source_row_number": 934054
+              },
+              {
+                "comment_id": 53841030,
+                "canonical_source_row_number": 25105
+              },
+              {
+                "comment_id": 53918942,
+                "canonical_source_row_number": 23883
+              }
+            ],
+            [
+              {
+                "comment_id": 53089518,
+                "canonical_source_row_number": 1707842
+              },
+              {
+                "comment_id": 53081355,
+                "canonical_source_row_number": 1707844
+              },
+              {
+                "comment_id": 49821433,
+                "canonical_source_row_number": 2712739
+              }
+            ],
+            [
+              {
+                "comment_id": 29961651,
+                "canonical_source_row_number": 31345
+              }
+            ],
+            [
+              {
+                "comment_id": 53879837,
+                "canonical_source_row_number": 1031744
+              }
+            ],
+            [
+              {
+                "comment_id": 51484455,
+                "canonical_source_row_number": 3118288
+              }
+            ],
+            [
+              {
+                "comment_id": 51490582,
+                "canonical_source_row_number": 3452469
+              },
+              {
+                "comment_id": 49592086,
+                "canonical_source_row_number": 3554274
+              },
+              {
+                "comment_id": 36428179,
+                "canonical_source_row_number": 2035308
+              }
+            ],
+            [
+              {
+                "comment_id": 9358644,
+                "canonical_source_row_number": 2948460
+              }
+            ],
+            [
+              {
+                "comment_id": 46237956,
+                "canonical_source_row_number": 3050766
+              }
+            ],
+            [
+              {
+                "comment_id": 50792209,
+                "canonical_source_row_number": 3553241
+              },
+              {
+                "comment_id": 34623156,
+                "canonical_source_row_number": 3452483
+              },
+              {
+                "comment_id": 43422094,
+                "canonical_source_row_number": 1200314
+              }
+            ],
+            [
+              {
+                "comment_id": 33738389,
+                "canonical_source_row_number": 2038766
+              }
+            ]
+          ],
+          "latency_ms": 8766.229
+        },
+        "hybrid": {
+          "retrieval_mode": "hybrid",
+          "product_ids": [
+            2331113,
+            5664135,
+            81208,
+            289763,
+            117867,
+            6909950,
+            81128,
+            8823324,
+            1065000,
+            6833752
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 33702799,
+                "canonical_source_row_number": 2879870
+              },
+              {
+                "comment_id": 17882172,
+                "canonical_source_row_number": 3045202
+              },
+              {
+                "comment_id": 51494009,
+                "canonical_source_row_number": 2879868
+              }
+            ],
+            [
+              {
+                "comment_id": 54406359,
+                "canonical_source_row_number": 934054
+              },
+              {
+                "comment_id": 53841030,
+                "canonical_source_row_number": 25105
+              },
+              {
+                "comment_id": 53918942,
+                "canonical_source_row_number": 23883
+              }
+            ],
+            [
+              {
+                "comment_id": 53089518,
+                "canonical_source_row_number": 1707842
+              },
+              {
+                "comment_id": 53081355,
+                "canonical_source_row_number": 1707844
+              },
+              {
+                "comment_id": 49821433,
+                "canonical_source_row_number": 2712739
+              }
+            ],
+            [
+              {
+                "comment_id": 21007165,
+                "canonical_source_row_number": 2028410
+              },
+              {
+                "comment_id": 1994093,
+                "canonical_source_row_number": 2197863
+              },
+              {
+                "comment_id": 3039030,
+                "canonical_source_row_number": 2197859
+              }
+            ],
+            [
+              {
+                "comment_id": 29961651,
+                "canonical_source_row_number": 31345
+              }
+            ],
+            [
+              {
+                "comment_id": 49956625,
+                "canonical_source_row_number": 526633
+              },
+              {
+                "comment_id": 44260671,
+                "canonical_source_row_number": 526640
+              },
+              {
+                "comment_id": 49911644,
+                "canonical_source_row_number": 526635
+              }
+            ],
+            [
+              {
+                "comment_id": 53879837,
+                "canonical_source_row_number": 1031744
+              }
+            ],
+            [
+              {
+                "comment_id": 39529636,
+                "canonical_source_row_number": 2374761
+              },
+              {
+                "comment_id": 53924625,
+                "canonical_source_row_number": 2035372
+              },
+              {
+                "comment_id": 37810276,
+                "canonical_source_row_number": 2374763
+              }
+            ],
+            [
+              {
+                "comment_id": 4884772,
+                "canonical_source_row_number": 1867253
+              },
+              {
+                "comment_id": 7518406,
+                "canonical_source_row_number": 1867251
+              },
+              {
+                "comment_id": 9847864,
+                "canonical_source_row_number": 1774173
+              }
+            ],
+            [
+              {
+                "comment_id": 51484455,
+                "canonical_source_row_number": 3118288
+              }
+            ]
+          ],
+          "latency_ms": 589.24
+        }
+      }
     },
     {
       "id": "dry",
-      "status": "pass",
-      "passed": true,
-      "checks": {
-        "failures": []
-      },
-      "failures": [],
-      "latency_ms": 524.309
+      "deterministic": true,
+      "channels": {
+        "lexical": {
+          "retrieval_mode": "lexical",
+          "product_ids": [
+            9779340,
+            289763,
+            6909950,
+            1065000,
+            9264062,
+            6227609,
+            6696784,
+            5431902,
+            7121384,
+            83401
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 54005467,
+                "canonical_source_row_number": 1026009
+              },
+              {
+                "comment_id": 54588169,
+                "canonical_source_row_number": 857967
+              },
+              {
+                "comment_id": 47936375,
+                "canonical_source_row_number": 1026018
+              }
+            ],
+            [
+              {
+                "comment_id": 21007165,
+                "canonical_source_row_number": 2028410
+              },
+              {
+                "comment_id": 1994093,
+                "canonical_source_row_number": 2197863
+              },
+              {
+                "comment_id": 3039030,
+                "canonical_source_row_number": 2197859
+              }
+            ],
+            [
+              {
+                "comment_id": 49956625,
+                "canonical_source_row_number": 526633
+              },
+              {
+                "comment_id": 38758213,
+                "canonical_source_row_number": 696103
+              },
+              {
+                "comment_id": 42581783,
+                "canonical_source_row_number": 526642
+              }
+            ],
+            [
+              {
+                "comment_id": 4884772,
+                "canonical_source_row_number": 1867253
+              },
+              {
+                "comment_id": 17838609,
+                "canonical_source_row_number": 1696680
+              },
+              {
+                "comment_id": 7518406,
+                "canonical_source_row_number": 1867251
+              }
+            ],
+            [
+              {
+                "comment_id": 48975298,
+                "canonical_source_row_number": 1197465
+              },
+              {
+                "comment_id": 46058738,
+                "canonical_source_row_number": 1197472
+              },
+              {
+                "comment_id": 49045901,
+                "canonical_source_row_number": 1197464
+              }
+            ],
+            [
+              {
+                "comment_id": 52513197,
+                "canonical_source_row_number": 3850518
+              },
+              {
+                "comment_id": 30566148,
+                "canonical_source_row_number": 21789
+              },
+              {
+                "comment_id": 31062448,
+                "canonical_source_row_number": 21788
+              }
+            ],
+            [
+              {
+                "comment_id": 36375018,
+                "canonical_source_row_number": 25329
+              },
+              {
+                "comment_id": 41535779,
+                "canonical_source_row_number": 2707729
+              },
+              {
+                "comment_id": 34468780,
+                "canonical_source_row_number": 25332
+              }
+            ],
+            [
+              {
+                "comment_id": 53719760,
+                "canonical_source_row_number": 4057815
+              },
+              {
+                "comment_id": 28374925,
+                "canonical_source_row_number": 4057824
+              },
+              {
+                "comment_id": 30006194,
+                "canonical_source_row_number": 4057823
+              }
+            ],
+            [
+              {
+                "comment_id": 52058073,
+                "canonical_source_row_number": 1873082
+              },
+              {
+                "comment_id": 53917015,
+                "canonical_source_row_number": 1773877
+              },
+              {
+                "comment_id": 43460386,
+                "canonical_source_row_number": 2034575
+              }
+            ],
+            [
+              {
+                "comment_id": 3714238,
+                "canonical_source_row_number": 687726
+              },
+              {
+                "comment_id": 19025761,
+                "canonical_source_row_number": 353637
+              },
+              {
+                "comment_id": 2086438,
+                "canonical_source_row_number": 853784
+              }
+            ]
+          ],
+          "latency_ms": 415.976
+        },
+        "semantic": {
+          "retrieval_mode": "semantic",
+          "product_ids": [
+            5233687,
+            81136,
+            1442323,
+            81159,
+            81128,
+            6507438,
+            76150,
+            1640269,
+            81208,
+            6833752
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 33738389,
+                "canonical_source_row_number": 2038766
+              }
+            ],
+            [
+              {
+                "comment_id": 21291635,
+                "canonical_source_row_number": 3044369
+              },
+              {
+                "comment_id": 31620700,
+                "canonical_source_row_number": 2878346
+              }
+            ],
+            [
+              {
+                "comment_id": 46966364,
+                "canonical_source_row_number": 856799
+              },
+              {
+                "comment_id": 15285133,
+                "canonical_source_row_number": 3549427
+              },
+              {
+                "comment_id": 34963025,
+                "canonical_source_row_number": 261659
+              }
+            ],
+            [
+              {
+                "comment_id": 54574864,
+                "canonical_source_row_number": 363950
+              }
+            ],
+            [
+              {
+                "comment_id": 53879837,
+                "canonical_source_row_number": 1031744
+              },
+              {
+                "comment_id": 50846880,
+                "canonical_source_row_number": 3216695
+              }
+            ],
+            [
+              {
+                "comment_id": 46237956,
+                "canonical_source_row_number": 3050766
+              }
+            ],
+            [
+              {
+                "comment_id": 49713415,
+                "canonical_source_row_number": 2107933
+              },
+              {
+                "comment_id": 53927271,
+                "canonical_source_row_number": 2037393
+              },
+              {
+                "comment_id": 35063312,
+                "canonical_source_row_number": 527530
+              }
+            ],
+            [
+              {
+                "comment_id": 51613625,
+                "canonical_source_row_number": 27525
+              }
+            ],
+            [
+              {
+                "comment_id": 49279629,
+                "canonical_source_row_number": 2712751
+              },
+              {
+                "comment_id": 49821433,
+                "canonical_source_row_number": 2712739
+              },
+              {
+                "comment_id": 53089518,
+                "canonical_source_row_number": 1707842
+              }
+            ],
+            [
+              {
+                "comment_id": 51484455,
+                "canonical_source_row_number": 3118288
+              }
+            ]
+          ],
+          "latency_ms": 560.273
+        },
+        "hybrid": {
+          "retrieval_mode": "hybrid",
+          "product_ids": [
+            5233687,
+            9779340,
+            81136,
+            289763,
+            1442323,
+            6909950,
+            81159,
+            1065000,
+            81128,
+            9264062
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 33738389,
+                "canonical_source_row_number": 2038766
+              }
+            ],
+            [
+              {
+                "comment_id": 54005467,
+                "canonical_source_row_number": 1026009
+              },
+              {
+                "comment_id": 54588169,
+                "canonical_source_row_number": 857967
+              },
+              {
+                "comment_id": 47936375,
+                "canonical_source_row_number": 1026018
+              }
+            ],
+            [
+              {
+                "comment_id": 21291635,
+                "canonical_source_row_number": 3044369
+              },
+              {
+                "comment_id": 31620700,
+                "canonical_source_row_number": 2878346
+              }
+            ],
+            [
+              {
+                "comment_id": 21007165,
+                "canonical_source_row_number": 2028410
+              },
+              {
+                "comment_id": 1994093,
+                "canonical_source_row_number": 2197863
+              },
+              {
+                "comment_id": 3039030,
+                "canonical_source_row_number": 2197859
+              }
+            ],
+            [
+              {
+                "comment_id": 46966364,
+                "canonical_source_row_number": 856799
+              },
+              {
+                "comment_id": 15285133,
+                "canonical_source_row_number": 3549427
+              },
+              {
+                "comment_id": 34963025,
+                "canonical_source_row_number": 261659
+              }
+            ],
+            [
+              {
+                "comment_id": 49956625,
+                "canonical_source_row_number": 526633
+              },
+              {
+                "comment_id": 38758213,
+                "canonical_source_row_number": 696103
+              },
+              {
+                "comment_id": 42581783,
+                "canonical_source_row_number": 526642
+              }
+            ],
+            [
+              {
+                "comment_id": 54574864,
+                "canonical_source_row_number": 363950
+              }
+            ],
+            [
+              {
+                "comment_id": 4884772,
+                "canonical_source_row_number": 1867253
+              },
+              {
+                "comment_id": 17838609,
+                "canonical_source_row_number": 1696680
+              },
+              {
+                "comment_id": 7518406,
+                "canonical_source_row_number": 1867251
+              }
+            ],
+            [
+              {
+                "comment_id": 53879837,
+                "canonical_source_row_number": 1031744
+              },
+              {
+                "comment_id": 50846880,
+                "canonical_source_row_number": 3216695
+              }
+            ],
+            [
+              {
+                "comment_id": 48975298,
+                "canonical_source_row_number": 1197465
+              },
+              {
+                "comment_id": 46058738,
+                "canonical_source_row_number": 1197472
+              },
+              {
+                "comment_id": 49045901,
+                "canonical_source_row_number": 1197464
+              }
+            ]
+          ],
+          "latency_ms": 581.063
+        }
+      }
     },
     {
       "id": "colorless",
-      "status": "pass",
-      "passed": true,
-      "checks": {
-        "failures": []
-      },
-      "failures": [],
-      "latency_ms": 479.225
+      "deterministic": true,
+      "channels": {
+        "lexical": {
+          "retrieval_mode": "lexical",
+          "product_ids": [
+            11987519,
+            83401,
+            4398383,
+            7822296,
+            8719727,
+            226782,
+            773185,
+            773197,
+            289763,
+            821737
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 51583214,
+                "canonical_source_row_number": 2032503
+              },
+              {
+                "comment_id": 52663460,
+                "canonical_source_row_number": 2032494
+              },
+              {
+                "comment_id": 51761691,
+                "canonical_source_row_number": 2032502
+              }
+            ],
+            [
+              {
+                "comment_id": 5790315,
+                "canonical_source_row_number": 519068
+              },
+              {
+                "comment_id": 19025761,
+                "canonical_source_row_number": 353637
+              },
+              {
+                "comment_id": 1994920,
+                "canonical_source_row_number": 853786
+              }
+            ],
+            [
+              {
+                "comment_id": 39838110,
+                "canonical_source_row_number": 522964
+              },
+              {
+                "comment_id": 52846611,
+                "canonical_source_row_number": 358631
+              },
+              {
+                "comment_id": 21993535,
+                "canonical_source_row_number": 522968
+              }
+            ],
+            [
+              {
+                "comment_id": 44984671,
+                "canonical_source_row_number": 3852963
+              },
+              {
+                "comment_id": 46092296,
+                "canonical_source_row_number": 3852962
+              },
+              {
+                "comment_id": 47021281,
+                "canonical_source_row_number": 3852960
+              }
+            ],
+            [
+              {
+                "comment_id": 37661144,
+                "canonical_source_row_number": 1535953
+              },
+              {
+                "comment_id": 51762776,
+                "canonical_source_row_number": 1368618
+              },
+              {
+                "comment_id": 50351167,
+                "canonical_source_row_number": 1368622
+              }
+            ],
+            [
+              {
+                "comment_id": 14435416,
+                "canonical_source_row_number": 2780203
+              },
+              {
+                "comment_id": 2311060,
+                "canonical_source_row_number": 3788222
+              },
+              {
+                "comment_id": 4668377,
+                "canonical_source_row_number": 3714114
+              }
+            ],
+            [
+              {
+                "comment_id": 9582548,
+                "canonical_source_row_number": 3215530
+              },
+              {
+                "comment_id": 12184987,
+                "canonical_source_row_number": 865359
+              },
+              {
+                "comment_id": 3864160,
+                "canonical_source_row_number": 1031949
+              }
+            ],
+            [
+              {
+                "comment_id": 3050880,
+                "canonical_source_row_number": 3554302
+              },
+              {
+                "comment_id": 5310593,
+                "canonical_source_row_number": 3554298
+              },
+              {
+                "comment_id": 8944742,
+                "canonical_source_row_number": 3383067
+              }
+            ],
+            [
+              {
+                "comment_id": 1998043,
+                "canonical_source_row_number": 2197862
+              },
+              {
+                "comment_id": 3039030,
+                "canonical_source_row_number": 2197859
+              },
+              {
+                "comment_id": 3544370,
+                "canonical_source_row_number": 2197856
+              }
+            ],
+            [
+              {
+                "comment_id": 3275280,
+                "canonical_source_row_number": 1870103
+              },
+              {
+                "comment_id": 11334973,
+                "canonical_source_row_number": 1869724
+              },
+              {
+                "comment_id": 3709517,
+                "canonical_source_row_number": 1870101
+              }
+            ]
+          ],
+          "latency_ms": 356.537
+        },
+        "semantic": {
+          "retrieval_mode": "semantic",
+          "product_ids": [
+            773191,
+            81208,
+            2084318,
+            81259,
+            81284,
+            81226,
+            117854,
+            5233687,
+            117214,
+            81141
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 42115569,
+                "canonical_source_row_number": 3555084
+              },
+              {
+                "comment_id": 41064364,
+                "canonical_source_row_number": 3555088
+              },
+              {
+                "comment_id": 34794260,
+                "canonical_source_row_number": 3787974
+              }
+            ],
+            [
+              {
+                "comment_id": 48182009,
+                "canonical_source_row_number": 3557753
+              },
+              {
+                "comment_id": 48269107,
+                "canonical_source_row_number": 2038760
+              },
+              {
+                "comment_id": 54440134,
+                "canonical_source_row_number": 1438795
+              }
+            ],
+            [
+              {
+                "comment_id": 21338966,
+                "canonical_source_row_number": 1878875
+              },
+              {
+                "comment_id": 46341180,
+                "canonical_source_row_number": 3217254
+              },
+              {
+                "comment_id": 24348759,
+                "canonical_source_row_number": 1877809
+              }
+            ],
+            [
+              {
+                "comment_id": 44707415,
+                "canonical_source_row_number": 3859215
+              }
+            ],
+            [
+              {
+                "comment_id": 16731969,
+                "canonical_source_row_number": 3284602
+              },
+              {
+                "comment_id": 28120502,
+                "canonical_source_row_number": 3047168
+              },
+              {
+                "comment_id": 41218206,
+                "canonical_source_row_number": 2206930
+              }
+            ],
+            [
+              {
+                "comment_id": 53899773,
+                "canonical_source_row_number": 698183
+              },
+              {
+                "comment_id": 51084834,
+                "canonical_source_row_number": 1032490
+              },
+              {
+                "comment_id": 53547754,
+                "canonical_source_row_number": 866372
+              }
+            ],
+            [
+              {
+                "comment_id": 50807846,
+                "canonical_source_row_number": 27454
+              }
+            ],
+            [
+              {
+                "comment_id": 33738389,
+                "canonical_source_row_number": 2038766
+              }
+            ],
+            [
+              {
+                "comment_id": 3123501,
+                "canonical_source_row_number": 3041220
+              }
+            ],
+            [
+              {
+                "comment_id": 52421805,
+                "canonical_source_row_number": 1541901
+              }
+            ]
+          ],
+          "latency_ms": 491.728
+        },
+        "hybrid": {
+          "retrieval_mode": "hybrid",
+          "product_ids": [
+            773191,
+            11987519,
+            81208,
+            83401,
+            2084318,
+            4398383,
+            81259,
+            7822296,
+            81284,
+            8719727
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 42115569,
+                "canonical_source_row_number": 3555084
+              },
+              {
+                "comment_id": 41064364,
+                "canonical_source_row_number": 3555088
+              },
+              {
+                "comment_id": 34794260,
+                "canonical_source_row_number": 3787974
+              }
+            ],
+            [
+              {
+                "comment_id": 51583214,
+                "canonical_source_row_number": 2032503
+              },
+              {
+                "comment_id": 52663460,
+                "canonical_source_row_number": 2032494
+              },
+              {
+                "comment_id": 51761691,
+                "canonical_source_row_number": 2032502
+              }
+            ],
+            [
+              {
+                "comment_id": 48182009,
+                "canonical_source_row_number": 3557753
+              },
+              {
+                "comment_id": 48269107,
+                "canonical_source_row_number": 2038760
+              },
+              {
+                "comment_id": 54440134,
+                "canonical_source_row_number": 1438795
+              }
+            ],
+            [
+              {
+                "comment_id": 5790315,
+                "canonical_source_row_number": 519068
+              },
+              {
+                "comment_id": 19025761,
+                "canonical_source_row_number": 353637
+              },
+              {
+                "comment_id": 1994920,
+                "canonical_source_row_number": 853786
+              }
+            ],
+            [
+              {
+                "comment_id": 21338966,
+                "canonical_source_row_number": 1878875
+              },
+              {
+                "comment_id": 46341180,
+                "canonical_source_row_number": 3217254
+              },
+              {
+                "comment_id": 24348759,
+                "canonical_source_row_number": 1877809
+              }
+            ],
+            [
+              {
+                "comment_id": 39838110,
+                "canonical_source_row_number": 522964
+              },
+              {
+                "comment_id": 52846611,
+                "canonical_source_row_number": 358631
+              },
+              {
+                "comment_id": 21993535,
+                "canonical_source_row_number": 522968
+              }
+            ],
+            [
+              {
+                "comment_id": 44707415,
+                "canonical_source_row_number": 3859215
+              }
+            ],
+            [
+              {
+                "comment_id": 44984671,
+                "canonical_source_row_number": 3852963
+              },
+              {
+                "comment_id": 46092296,
+                "canonical_source_row_number": 3852962
+              },
+              {
+                "comment_id": 47021281,
+                "canonical_source_row_number": 3852960
+              }
+            ],
+            [
+              {
+                "comment_id": 16731969,
+                "canonical_source_row_number": 3284602
+              },
+              {
+                "comment_id": 28120502,
+                "canonical_source_row_number": 3047168
+              },
+              {
+                "comment_id": 41218206,
+                "canonical_source_row_number": 2206930
+              }
+            ],
+            [
+              {
+                "comment_id": 37661144,
+                "canonical_source_row_number": 1535953
+              },
+              {
+                "comment_id": 51762776,
+                "canonical_source_row_number": 1368618
+              },
+              {
+                "comment_id": 50351167,
+                "canonical_source_row_number": 1368622
+              }
+            ]
+          ],
+          "latency_ms": 529.613
+        }
+      }
     },
     {
       "id": "light",
-      "status": "pass",
-      "passed": true,
-      "checks": {
-        "failures": []
-      },
-      "failures": [],
-      "latency_ms": 526.153
+      "deterministic": true,
+      "channels": {
+        "lexical": {
+          "retrieval_mode": "lexical",
+          "product_ids": [
+            11987519,
+            4398383,
+            7357889,
+            1065000,
+            977089,
+            6028480,
+            226782,
+            6028466,
+            1612118,
+            1798654
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 52663460,
+                "canonical_source_row_number": 2032494
+              },
+              {
+                "comment_id": 52663542,
+                "canonical_source_row_number": 2032493
+              },
+              {
+                "comment_id": 52663618,
+                "canonical_source_row_number": 1941397
+              }
+            ],
+            [
+              {
+                "comment_id": 35974995,
+                "canonical_source_row_number": 522966
+              },
+              {
+                "comment_id": 21993535,
+                "canonical_source_row_number": 522968
+              },
+              {
+                "comment_id": 46858325,
+                "canonical_source_row_number": 358636
+              }
+            ],
+            [
+              {
+                "comment_id": 34284397,
+                "canonical_source_row_number": 2948534
+              },
+              {
+                "comment_id": 36396202,
+                "canonical_source_row_number": 1871098
+              },
+              {
+                "comment_id": 37886220,
+                "canonical_source_row_number": 1871094
+              }
+            ],
+            [
+              {
+                "comment_id": 13752132,
+                "canonical_source_row_number": 1696684
+              },
+              {
+                "comment_id": 35772558,
+                "canonical_source_row_number": 1532251
+              },
+              {
+                "comment_id": 41242462,
+                "canonical_source_row_number": 1532245
+              }
+            ],
+            [
+              {
+                "comment_id": 4350694,
+                "canonical_source_row_number": 2372359
+              },
+              {
+                "comment_id": 8452324,
+                "canonical_source_row_number": 2274763
+              },
+              {
+                "comment_id": 22753940,
+                "canonical_source_row_number": 2372115
+              }
+            ],
+            [
+              {
+                "comment_id": 25783654,
+                "canonical_source_row_number": 355599
+              },
+              {
+                "comment_id": 50647165,
+                "canonical_source_row_number": 3714506
+              },
+              {
+                "comment_id": 37200755,
+                "canonical_source_row_number": 355598
+              }
+            ],
+            [
+              {
+                "comment_id": 10553536,
+                "canonical_source_row_number": 3040991
+              },
+              {
+                "comment_id": 3694589,
+                "canonical_source_row_number": 3714656
+              },
+              {
+                "comment_id": 3931870,
+                "canonical_source_row_number": 3714127
+              }
+            ],
+            [
+              {
+                "comment_id": 45349374,
+                "canonical_source_row_number": 855994
+              },
+              {
+                "comment_id": 46488472,
+                "canonical_source_row_number": 855993
+              },
+              {
+                "comment_id": 50784767,
+                "canonical_source_row_number": 855989
+              }
+            ],
+            [
+              {
+                "comment_id": 30470542,
+                "canonical_source_row_number": 3452665
+              },
+              {
+                "comment_id": 46495942,
+                "canonical_source_row_number": 2874307
+              },
+              {
+                "comment_id": 24872275,
+                "canonical_source_row_number": 3714208
+              }
+            ],
+            [
+              {
+                "comment_id": 6457674,
+                "canonical_source_row_number": 2204210
+              },
+              {
+                "comment_id": 12000370,
+                "canonical_source_row_number": 2204201
+              },
+              {
+                "comment_id": 50606219,
+                "canonical_source_row_number": 2203432
+              }
+            ]
+          ],
+          "latency_ms": 402.077
+        },
+        "semantic": {
+          "retrieval_mode": "semantic",
+          "product_ids": [
+            2084318,
+            731793,
+            2084297,
+            6507438,
+            81128,
+            7564692,
+            11303373,
+            2084251,
+            82004,
+            117217
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 23454417,
+                "canonical_source_row_number": 1878863
+              },
+              {
+                "comment_id": 21472578,
+                "canonical_source_row_number": 1878874
+              },
+              {
+                "comment_id": 37841022,
+                "canonical_source_row_number": 3217434
+              }
+            ],
+            [
+              {
+                "comment_id": 39518926,
+                "canonical_source_row_number": 2035892
+              },
+              {
+                "comment_id": 29877841,
+                "canonical_source_row_number": 2374845
+              },
+              {
+                "comment_id": 30693747,
+                "canonical_source_row_number": 2374842
+              }
+            ],
+            [
+              {
+                "comment_id": 31005359,
+                "canonical_source_row_number": 3045911
+              },
+              {
+                "comment_id": 34212695,
+                "canonical_source_row_number": 3045534
+              },
+              {
+                "comment_id": 34511155,
+                "canonical_source_row_number": 2880898
+              }
+            ],
+            [
+              {
+                "comment_id": 52690064,
+                "canonical_source_row_number": 3386843
+              },
+              {
+                "comment_id": 49757117,
+                "canonical_source_row_number": 3860270
+              },
+              {
+                "comment_id": 51897248,
+                "canonical_source_row_number": 2713709
+              }
+            ],
+            [
+              {
+                "comment_id": 49314608,
+                "canonical_source_row_number": 1033202
+              },
+              {
+                "comment_id": 50590406,
+                "canonical_source_row_number": 1033040
+              },
+              {
+                "comment_id": 54272593,
+                "canonical_source_row_number": 1033027
+              }
+            ],
+            [
+              {
+                "comment_id": 37488455,
+                "canonical_source_row_number": 864112
+              },
+              {
+                "comment_id": 51799465,
+                "canonical_source_row_number": 526920
+              }
+            ],
+            [
+              {
+                "comment_id": 51900678,
+                "canonical_source_row_number": 357230
+              },
+              {
+                "comment_id": 50103825,
+                "canonical_source_row_number": 1254912
+              }
+            ],
+            [
+              {
+                "comment_id": 33155018,
+                "canonical_source_row_number": 1877861
+              }
+            ],
+            [
+              {
+                "comment_id": 51209800,
+                "canonical_source_row_number": 1872001
+              }
+            ],
+            [
+              {
+                "comment_id": 52897733,
+                "canonical_source_row_number": 2443047
+              }
+            ]
+          ],
+          "latency_ms": 539.13
+        },
+        "hybrid": {
+          "retrieval_mode": "hybrid",
+          "product_ids": [
+            2084318,
+            11987519,
+            731793,
+            4398383,
+            2084297,
+            7357889,
+            1065000,
+            6507438,
+            81128,
+            977089
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 23454417,
+                "canonical_source_row_number": 1878863
+              },
+              {
+                "comment_id": 21472578,
+                "canonical_source_row_number": 1878874
+              },
+              {
+                "comment_id": 37841022,
+                "canonical_source_row_number": 3217434
+              }
+            ],
+            [
+              {
+                "comment_id": 52663460,
+                "canonical_source_row_number": 2032494
+              },
+              {
+                "comment_id": 52663542,
+                "canonical_source_row_number": 2032493
+              },
+              {
+                "comment_id": 52663618,
+                "canonical_source_row_number": 1941397
+              }
+            ],
+            [
+              {
+                "comment_id": 39518926,
+                "canonical_source_row_number": 2035892
+              },
+              {
+                "comment_id": 29877841,
+                "canonical_source_row_number": 2374845
+              },
+              {
+                "comment_id": 30693747,
+                "canonical_source_row_number": 2374842
+              }
+            ],
+            [
+              {
+                "comment_id": 35974995,
+                "canonical_source_row_number": 522966
+              },
+              {
+                "comment_id": 21993535,
+                "canonical_source_row_number": 522968
+              },
+              {
+                "comment_id": 46858325,
+                "canonical_source_row_number": 358636
+              }
+            ],
+            [
+              {
+                "comment_id": 31005359,
+                "canonical_source_row_number": 3045911
+              },
+              {
+                "comment_id": 34212695,
+                "canonical_source_row_number": 3045534
+              },
+              {
+                "comment_id": 34511155,
+                "canonical_source_row_number": 2880898
+              }
+            ],
+            [
+              {
+                "comment_id": 34284397,
+                "canonical_source_row_number": 2948534
+              },
+              {
+                "comment_id": 36396202,
+                "canonical_source_row_number": 1871098
+              },
+              {
+                "comment_id": 37886220,
+                "canonical_source_row_number": 1871094
+              }
+            ],
+            [
+              {
+                "comment_id": 13752132,
+                "canonical_source_row_number": 1696684
+              },
+              {
+                "comment_id": 35772558,
+                "canonical_source_row_number": 1532251
+              },
+              {
+                "comment_id": 41242462,
+                "canonical_source_row_number": 1532245
+              }
+            ],
+            [
+              {
+                "comment_id": 52690064,
+                "canonical_source_row_number": 3386843
+              },
+              {
+                "comment_id": 49757117,
+                "canonical_source_row_number": 3860270
+              },
+              {
+                "comment_id": 51897248,
+                "canonical_source_row_number": 2713709
+              }
+            ],
+            [
+              {
+                "comment_id": 49314608,
+                "canonical_source_row_number": 1033202
+              },
+              {
+                "comment_id": 50590406,
+                "canonical_source_row_number": 1033040
+              },
+              {
+                "comment_id": 54272593,
+                "canonical_source_row_number": 1033027
+              }
+            ],
+            [
+              {
+                "comment_id": 4350694,
+                "canonical_source_row_number": 2372359
+              },
+              {
+                "comment_id": 8452324,
+                "canonical_source_row_number": 2274763
+              },
+              {
+                "comment_id": 22753940,
+                "canonical_source_row_number": 2372115
+              }
+            ]
+          ],
+          "latency_ms": 557.509
+        }
+      }
     },
     {
       "id": "value",
-      "status": "pass",
-      "passed": true,
-      "checks": {
-        "failures": []
-      },
-      "failures": [],
-      "latency_ms": 537.206
+      "deterministic": true,
+      "channels": {
+        "lexical": {
+          "retrieval_mode": "lexical",
+          "product_ids": [
+            11987519,
+            1019073,
+            301067,
+            301139,
+            5431902,
+            7357853,
+            706241,
+            9529945,
+            9295513,
+            5106586
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 52663460,
+                "canonical_source_row_number": 2032494
+              },
+              {
+                "comment_id": 52828514,
+                "canonical_source_row_number": 1871316
+              },
+              {
+                "comment_id": 51583214,
+                "canonical_source_row_number": 2032503
+              }
+            ],
+            [
+              {
+                "comment_id": 6681333,
+                "canonical_source_row_number": 1531596
+              },
+              {
+                "comment_id": 9428850,
+                "canonical_source_row_number": 1531594
+              },
+              {
+                "comment_id": 11598088,
+                "canonical_source_row_number": 1531591
+              }
+            ],
+            [
+              {
+                "comment_id": 3831258,
+                "canonical_source_row_number": 2028280
+              },
+              {
+                "comment_id": 5585785,
+                "canonical_source_row_number": 2028273
+              },
+              {
+                "comment_id": 4191226,
+                "canonical_source_row_number": 2028278
+              }
+            ],
+            [
+              {
+                "comment_id": 6164995,
+                "canonical_source_row_number": 20061
+              },
+              {
+                "comment_id": 8506784,
+                "canonical_source_row_number": 3206787
+              },
+              {
+                "comment_id": 10547611,
+                "canonical_source_row_number": 3206779
+              }
+            ],
+            [
+              {
+                "comment_id": 32926718,
+                "canonical_source_row_number": 4057821
+              },
+              {
+                "comment_id": 27637228,
+                "canonical_source_row_number": 4057825
+              },
+              {
+                "comment_id": 25265582,
+                "canonical_source_row_number": 4057831
+              }
+            ],
+            [
+              {
+                "comment_id": 35722109,
+                "canonical_source_row_number": 187120
+              },
+              {
+                "comment_id": 35885890,
+                "canonical_source_row_number": 187119
+              },
+              {
+                "comment_id": 51298054,
+                "canonical_source_row_number": 1028564
+              }
+            ],
+            [
+              {
+                "comment_id": 3401530,
+                "canonical_source_row_number": 2611582
+              },
+              {
+                "comment_id": 7449571,
+                "canonical_source_row_number": 3207127
+              },
+              {
+                "comment_id": 7645934,
+                "canonical_source_row_number": 3207124
+              }
+            ],
+            [
+              {
+                "comment_id": 54151408,
+                "canonical_source_row_number": 1702481
+              },
+              {
+                "comment_id": 52849179,
+                "canonical_source_row_number": 3118019
+              },
+              {
+                "comment_id": 47186370,
+                "canonical_source_row_number": 3213115
+              }
+            ],
+            [
+              {
+                "comment_id": 47830836,
+                "canonical_source_row_number": 3377591
+              },
+              {
+                "comment_id": 41015905,
+                "canonical_source_row_number": 3377596
+              },
+              {
+                "comment_id": 44256980,
+                "canonical_source_row_number": 3377595
+              }
+            ],
+            [
+              {
+                "comment_id": 39017471,
+                "canonical_source_row_number": 1869653
+              },
+              {
+                "comment_id": 47936507,
+                "canonical_source_row_number": 1869647
+              },
+              {
+                "comment_id": 31168626,
+                "canonical_source_row_number": 1869657
+              }
+            ]
+          ],
+          "latency_ms": 407.234
+        },
+        "semantic": {
+          "retrieval_mode": "semantic",
+          "product_ids": [
+            81141,
+            81159,
+            82004,
+            81226,
+            6507438,
+            5233687,
+            81259,
+            2084226,
+            81284,
+            4455832
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 52424991,
+                "canonical_source_row_number": 1541900
+              },
+              {
+                "comment_id": 52320955,
+                "canonical_source_row_number": 1541909
+              },
+              {
+                "comment_id": 52112620,
+                "canonical_source_row_number": 2828259
+              }
+            ],
+            [
+              {
+                "comment_id": 53673373,
+                "canonical_source_row_number": 364012
+              },
+              {
+                "comment_id": 51571207,
+                "canonical_source_row_number": 528370
+              },
+              {
+                "comment_id": 51747876,
+                "canonical_source_row_number": 364634
+              }
+            ],
+            [
+              {
+                "comment_id": 50259150,
+                "canonical_source_row_number": 1872727
+              },
+              {
+                "comment_id": 50737019,
+                "canonical_source_row_number": 1872383
+              },
+              {
+                "comment_id": 54007668,
+                "canonical_source_row_number": 3043323
+              }
+            ],
+            [
+              {
+                "comment_id": 51759506,
+                "canonical_source_row_number": 2208990
+              },
+              {
+                "comment_id": 50282962,
+                "canonical_source_row_number": 192786
+              },
+              {
+                "comment_id": 53063783,
+                "canonical_source_row_number": 866810
+              }
+            ],
+            [
+              {
+                "comment_id": 46237956,
+                "canonical_source_row_number": 3050766
+              }
+            ],
+            [
+              {
+                "comment_id": 33738389,
+                "canonical_source_row_number": 2038766
+              }
+            ],
+            [
+              {
+                "comment_id": 20180447,
+                "canonical_source_row_number": 3859863
+              },
+              {
+                "comment_id": 35832680,
+                "canonical_source_row_number": 1707532
+              }
+            ],
+            [
+              {
+                "comment_id": 11655900,
+                "canonical_source_row_number": 695643
+              },
+              {
+                "comment_id": 7858963,
+                "canonical_source_row_number": 695654
+              }
+            ],
+            [
+              {
+                "comment_id": 35756230,
+                "canonical_source_row_number": 2779975
+              },
+              {
+                "comment_id": 35632563,
+                "canonical_source_row_number": 2880906
+              },
+              {
+                "comment_id": 48181511,
+                "canonical_source_row_number": 2206486
+              }
+            ],
+            [
+              {
+                "comment_id": 24546330,
+                "canonical_source_row_number": 1875085
+              }
+            ]
+          ],
+          "latency_ms": 532.494
+        },
+        "hybrid": {
+          "retrieval_mode": "hybrid",
+          "product_ids": [
+            81141,
+            11987519,
+            81159,
+            1019073,
+            82004,
+            301067,
+            81226,
+            301139,
+            5431902,
+            6507438
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 52424991,
+                "canonical_source_row_number": 1541900
+              },
+              {
+                "comment_id": 52320955,
+                "canonical_source_row_number": 1541909
+              },
+              {
+                "comment_id": 52112620,
+                "canonical_source_row_number": 2828259
+              }
+            ],
+            [
+              {
+                "comment_id": 52663460,
+                "canonical_source_row_number": 2032494
+              },
+              {
+                "comment_id": 52828514,
+                "canonical_source_row_number": 1871316
+              },
+              {
+                "comment_id": 51583214,
+                "canonical_source_row_number": 2032503
+              }
+            ],
+            [
+              {
+                "comment_id": 53673373,
+                "canonical_source_row_number": 364012
+              },
+              {
+                "comment_id": 51571207,
+                "canonical_source_row_number": 528370
+              },
+              {
+                "comment_id": 51747876,
+                "canonical_source_row_number": 364634
+              }
+            ],
+            [
+              {
+                "comment_id": 6681333,
+                "canonical_source_row_number": 1531596
+              },
+              {
+                "comment_id": 9428850,
+                "canonical_source_row_number": 1531594
+              },
+              {
+                "comment_id": 11598088,
+                "canonical_source_row_number": 1531591
+              }
+            ],
+            [
+              {
+                "comment_id": 50259150,
+                "canonical_source_row_number": 1872727
+              },
+              {
+                "comment_id": 50737019,
+                "canonical_source_row_number": 1872383
+              },
+              {
+                "comment_id": 54007668,
+                "canonical_source_row_number": 3043323
+              }
+            ],
+            [
+              {
+                "comment_id": 3831258,
+                "canonical_source_row_number": 2028280
+              },
+              {
+                "comment_id": 5585785,
+                "canonical_source_row_number": 2028273
+              },
+              {
+                "comment_id": 4191226,
+                "canonical_source_row_number": 2028278
+              }
+            ],
+            [
+              {
+                "comment_id": 51759506,
+                "canonical_source_row_number": 2208990
+              },
+              {
+                "comment_id": 50282962,
+                "canonical_source_row_number": 192786
+              },
+              {
+                "comment_id": 53063783,
+                "canonical_source_row_number": 866810
+              }
+            ],
+            [
+              {
+                "comment_id": 6164995,
+                "canonical_source_row_number": 20061
+              },
+              {
+                "comment_id": 8506784,
+                "canonical_source_row_number": 3206787
+              },
+              {
+                "comment_id": 10547611,
+                "canonical_source_row_number": 3206779
+              }
+            ],
+            [
+              {
+                "comment_id": 32926718,
+                "canonical_source_row_number": 4057821
+              },
+              {
+                "comment_id": 27637228,
+                "canonical_source_row_number": 4057825
+              },
+              {
+                "comment_id": 25265582,
+                "canonical_source_row_number": 4057831
+              }
+            ],
+            [
+              {
+                "comment_id": 46237956,
+                "canonical_source_row_number": 3050766
+              }
+            ]
+          ],
+          "latency_ms": 565.048
+        }
+      }
     },
     {
       "id": "brand",
-      "status": "pass",
-      "passed": true,
-      "checks": {
-        "failures": []
-      },
-      "failures": [],
-      "latency_ms": 21.441
+      "deterministic": true,
+      "channels": {
+        "lexical": {
+          "retrieval_mode": "lexical",
+          "product_ids": [
+            981863,
+            1798654,
+            981853,
+            7686853,
+            981333,
+            981870,
+            981125,
+            981872,
+            981091,
+            1093326
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 3320188,
+                "canonical_source_row_number": 1703990
+              },
+              {
+                "comment_id": 5958990,
+                "canonical_source_row_number": 1703986
+              },
+              {
+                "comment_id": 6996783,
+                "canonical_source_row_number": 1703980
+              }
+            ],
+            [
+              {
+                "comment_id": 5286506,
+                "canonical_source_row_number": 2373393
+              },
+              {
+                "comment_id": 5504836,
+                "canonical_source_row_number": 2373392
+              },
+              {
+                "comment_id": 5523084,
+                "canonical_source_row_number": 2274697
+              }
+            ],
+            [
+              {
+                "comment_id": 2517453,
+                "canonical_source_row_number": 864019
+              },
+              {
+                "comment_id": 3596061,
+                "canonical_source_row_number": 696889
+              },
+              {
+                "comment_id": 3685052,
+                "canonical_source_row_number": 696335
+              }
+            ],
+            [
+              {
+                "comment_id": 35017980,
+                "canonical_source_row_number": 188139
+              },
+              {
+                "comment_id": 39866109,
+                "canonical_source_row_number": 188128
+              },
+              {
+                "comment_id": 39877460,
+                "canonical_source_row_number": 188127
+              }
+            ],
+            [
+              {
+                "comment_id": 3858336,
+                "canonical_source_row_number": 2375367
+              },
+              {
+                "comment_id": 4336815,
+                "canonical_source_row_number": 2375362
+              },
+              {
+                "comment_id": 4350939,
+                "canonical_source_row_number": 2375361
+              }
+            ],
+            [
+              {
+                "comment_id": 4148447,
+                "canonical_source_row_number": 2036002
+              },
+              {
+                "comment_id": 4951676,
+                "canonical_source_row_number": 2035662
+              },
+              {
+                "comment_id": 8598221,
+                "canonical_source_row_number": 3045115
+              }
+            ],
+            [
+              {
+                "comment_id": 46897669,
+                "canonical_source_row_number": 861997
+              },
+              {
+                "comment_id": 47041252,
+                "canonical_source_row_number": 861994
+              },
+              {
+                "comment_id": 48483298,
+                "canonical_source_row_number": 861977
+              }
+            ],
+            [
+              {
+                "comment_id": 4385434,
+                "canonical_source_row_number": 1539311
+              },
+              {
+                "comment_id": 4615443,
+                "canonical_source_row_number": 1539309
+              },
+              {
+                "comment_id": 9794844,
+                "canonical_source_row_number": 1539303
+              }
+            ],
+            [
+              {
+                "comment_id": 49705925,
+                "canonical_source_row_number": 1368917
+              },
+              {
+                "comment_id": 50366798,
+                "canonical_source_row_number": 1368161
+              },
+              {
+                "comment_id": 50581040,
+                "canonical_source_row_number": 1368155
+              }
+            ],
+            [
+              {
+                "comment_id": 3947515,
+                "canonical_source_row_number": 3630262
+              },
+              {
+                "comment_id": 4441548,
+                "canonical_source_row_number": 2274617
+              },
+              {
+                "comment_id": 4708279,
+                "canonical_source_row_number": 2205947
+              }
+            ]
+          ],
+          "latency_ms": 24.322
+        },
+        "semantic": {
+          "retrieval_mode": "semantic",
+          "product_ids": [],
+          "evidence": [],
+          "latency_ms": 223.048
+        },
+        "hybrid": {
+          "retrieval_mode": "hybrid",
+          "product_ids": [
+            981863,
+            1798654,
+            981853,
+            7686853,
+            981333,
+            981870,
+            981125,
+            981872,
+            981091,
+            1093326
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 3320188,
+                "canonical_source_row_number": 1703990
+              },
+              {
+                "comment_id": 5958990,
+                "canonical_source_row_number": 1703986
+              },
+              {
+                "comment_id": 6996783,
+                "canonical_source_row_number": 1703980
+              }
+            ],
+            [
+              {
+                "comment_id": 5286506,
+                "canonical_source_row_number": 2373393
+              },
+              {
+                "comment_id": 5504836,
+                "canonical_source_row_number": 2373392
+              },
+              {
+                "comment_id": 5523084,
+                "canonical_source_row_number": 2274697
+              }
+            ],
+            [
+              {
+                "comment_id": 2517453,
+                "canonical_source_row_number": 864019
+              },
+              {
+                "comment_id": 3596061,
+                "canonical_source_row_number": 696889
+              },
+              {
+                "comment_id": 3685052,
+                "canonical_source_row_number": 696335
+              }
+            ],
+            [
+              {
+                "comment_id": 35017980,
+                "canonical_source_row_number": 188139
+              },
+              {
+                "comment_id": 39866109,
+                "canonical_source_row_number": 188128
+              },
+              {
+                "comment_id": 39877460,
+                "canonical_source_row_number": 188127
+              }
+            ],
+            [
+              {
+                "comment_id": 3858336,
+                "canonical_source_row_number": 2375367
+              },
+              {
+                "comment_id": 4336815,
+                "canonical_source_row_number": 2375362
+              },
+              {
+                "comment_id": 4350939,
+                "canonical_source_row_number": 2375361
+              }
+            ],
+            [
+              {
+                "comment_id": 4148447,
+                "canonical_source_row_number": 2036002
+              },
+              {
+                "comment_id": 4951676,
+                "canonical_source_row_number": 2035662
+              },
+              {
+                "comment_id": 8598221,
+                "canonical_source_row_number": 3045115
+              }
+            ],
+            [
+              {
+                "comment_id": 46897669,
+                "canonical_source_row_number": 861997
+              },
+              {
+                "comment_id": 47041252,
+                "canonical_source_row_number": 861994
+              },
+              {
+                "comment_id": 48483298,
+                "canonical_source_row_number": 861977
+              }
+            ],
+            [
+              {
+                "comment_id": 4385434,
+                "canonical_source_row_number": 1539311
+              },
+              {
+                "comment_id": 4615443,
+                "canonical_source_row_number": 1539309
+              },
+              {
+                "comment_id": 9794844,
+                "canonical_source_row_number": 1539303
+              }
+            ],
+            [
+              {
+                "comment_id": 49705925,
+                "canonical_source_row_number": 1368917
+              },
+              {
+                "comment_id": 50366798,
+                "canonical_source_row_number": 1368161
+              },
+              {
+                "comment_id": 50581040,
+                "canonical_source_row_number": 1368155
+              }
+            ],
+            [
+              {
+                "comment_id": 3947515,
+                "canonical_source_row_number": 3630262
+              },
+              {
+                "comment_id": 4441548,
+                "canonical_source_row_number": 2274617
+              },
+              {
+                "comment_id": 4708279,
+                "canonical_source_row_number": 2205947
+              }
+            ]
+          ],
+          "latency_ms": 260.051
+        }
+      }
     },
     {
       "id": "price",
-      "status": "pass",
-      "passed": true,
-      "checks": {
-        "failures": []
-      },
-      "failures": [],
-      "latency_ms": 224.912
+      "deterministic": true,
+      "channels": {
+        "lexical": {
+          "retrieval_mode": "lexical",
+          "product_ids": [
+            11987519,
+            3022720,
+            3074140,
+            977089,
+            2188800,
+            7121384,
+            1484427,
+            2084226,
+            81909,
+            9102267
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 51583214,
+                "canonical_source_row_number": 2032503
+              },
+              {
+                "comment_id": 52163505,
+                "canonical_source_row_number": 2032501
+              },
+              {
+                "comment_id": 52283683,
+                "canonical_source_row_number": 2032498
+              }
+            ],
+            [
+              {
+                "comment_id": 11232050,
+                "canonical_source_row_number": 2373754
+              },
+              {
+                "comment_id": 16955980,
+                "canonical_source_row_number": 2373752
+              },
+              {
+                "comment_id": 21258131,
+                "canonical_source_row_number": 2373750
+              }
+            ],
+            [
+              {
+                "comment_id": 11948892,
+                "canonical_source_row_number": 3556240
+              },
+              {
+                "comment_id": 41849395,
+                "canonical_source_row_number": 3384750
+              },
+              {
+                "comment_id": 41975410,
+                "canonical_source_row_number": 3384749
+              }
+            ],
+            [
+              {
+                "comment_id": 3650781,
+                "canonical_source_row_number": 2372361
+              },
+              {
+                "comment_id": 4350694,
+                "canonical_source_row_number": 2372359
+              },
+              {
+                "comment_id": 9260615,
+                "canonical_source_row_number": 2274758
+              }
+            ],
+            [
+              {
+                "comment_id": 11773581,
+                "canonical_source_row_number": 2203853
+              },
+              {
+                "comment_id": 14613255,
+                "canonical_source_row_number": 2203342
+              },
+              {
+                "comment_id": 15112541,
+                "canonical_source_row_number": 2203341
+              }
+            ],
+            [
+              {
+                "comment_id": 35776685,
+                "canonical_source_row_number": 2035074
+              },
+              {
+                "comment_id": 39008737,
+                "canonical_source_row_number": 2034944
+              },
+              {
+                "comment_id": 40505173,
+                "canonical_source_row_number": 2034583
+              }
+            ],
+            [
+              {
+                "comment_id": 2723812,
+                "canonical_source_row_number": 865249
+              },
+              {
+                "comment_id": 6829529,
+                "canonical_source_row_number": 1704777
+              },
+              {
+                "comment_id": 10942050,
+                "canonical_source_row_number": 863881
+              }
+            ],
+            [
+              {
+                "comment_id": 5397044,
+                "canonical_source_row_number": 695659
+              },
+              {
+                "comment_id": 6462771,
+                "canonical_source_row_number": 695657
+              },
+              {
+                "comment_id": 7004524,
+                "canonical_source_row_number": 695656
+              }
+            ],
+            [
+              {
+                "comment_id": 1039389,
+                "canonical_source_row_number": 2209364
+              },
+              {
+                "comment_id": 1949733,
+                "canonical_source_row_number": 2542987
+              },
+              {
+                "comment_id": 1969834,
+                "canonical_source_row_number": 2542986
+              }
+            ],
+            [
+              {
+                "comment_id": 47082248,
+                "canonical_source_row_number": 1364378
+              },
+              {
+                "comment_id": 49211521,
+                "canonical_source_row_number": 1364373
+              },
+              {
+                "comment_id": 49599462,
+                "canonical_source_row_number": 1364366
+              }
+            ]
+          ],
+          "latency_ms": 193.713
+        },
+        "semantic": {
+          "retrieval_mode": "semantic",
+          "product_ids": [
+            5233687,
+            81141,
+            4127525,
+            831818,
+            81909,
+            6507438,
+            81159,
+            81758,
+            2172239,
+            831817
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 33738389,
+                "canonical_source_row_number": 2038766
+              }
+            ],
+            [
+              {
+                "comment_id": 53368893,
+                "canonical_source_row_number": 1032972
+              },
+              {
+                "comment_id": 52805451,
+                "canonical_source_row_number": 3559095
+              },
+              {
+                "comment_id": 52421805,
+                "canonical_source_row_number": 1541901
+              }
+            ],
+            [
+              {
+                "comment_id": 54386860,
+                "canonical_source_row_number": 933890
+              },
+              {
+                "comment_id": 50120711,
+                "canonical_source_row_number": 1202572
+              },
+              {
+                "comment_id": 49243976,
+                "canonical_source_row_number": 191479
+              }
+            ],
+            [
+              {
+                "comment_id": 24203282,
+                "canonical_source_row_number": 2876589
+              },
+              {
+                "comment_id": 7791239,
+                "canonical_source_row_number": 1536500
+              },
+              {
+                "comment_id": 53036143,
+                "canonical_source_row_number": 2202852
+              }
+            ],
+            [
+              {
+                "comment_id": 2041108,
+                "canonical_source_row_number": 2542985
+              },
+              {
+                "comment_id": 53551008,
+                "canonical_source_row_number": 2542499
+              }
+            ],
+            [
+              {
+                "comment_id": 46237956,
+                "canonical_source_row_number": 3050766
+              }
+            ],
+            [
+              {
+                "comment_id": 52948297,
+                "canonical_source_row_number": 1541978
+              },
+              {
+                "comment_id": 53482223,
+                "canonical_source_row_number": 364018
+              },
+              {
+                "comment_id": 52124052,
+                "canonical_source_row_number": 2038632
+              }
+            ],
+            [
+              {
+                "comment_id": 53908370,
+                "canonical_source_row_number": 3862029
+              },
+              {
+                "comment_id": 51743162,
+                "canonical_source_row_number": 701044
+              },
+              {
+                "comment_id": 51500590,
+                "canonical_source_row_number": 195422
+              }
+            ],
+            [
+              {
+                "comment_id": 25541469,
+                "canonical_source_row_number": 2036104
+              }
+            ],
+            [
+              {
+                "comment_id": 20741803,
+                "canonical_source_row_number": 2372762
+              },
+              {
+                "comment_id": 43375201,
+                "canonical_source_row_number": 1027929
+              },
+              {
+                "comment_id": 51797085,
+                "canonical_source_row_number": 1027267
+              }
+            ]
+          ],
+          "latency_ms": 335.897
+        },
+        "hybrid": {
+          "retrieval_mode": "hybrid",
+          "product_ids": [
+            81909,
+            5233687,
+            11987519,
+            81141,
+            3022720,
+            3074140,
+            4127525,
+            831818,
+            977089,
+            2188800
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 2041108,
+                "canonical_source_row_number": 2542985
+              },
+              {
+                "comment_id": 53551008,
+                "canonical_source_row_number": 2542499
+              }
+            ],
+            [
+              {
+                "comment_id": 33738389,
+                "canonical_source_row_number": 2038766
+              }
+            ],
+            [
+              {
+                "comment_id": 51583214,
+                "canonical_source_row_number": 2032503
+              },
+              {
+                "comment_id": 52163505,
+                "canonical_source_row_number": 2032501
+              },
+              {
+                "comment_id": 52283683,
+                "canonical_source_row_number": 2032498
+              }
+            ],
+            [
+              {
+                "comment_id": 53368893,
+                "canonical_source_row_number": 1032972
+              },
+              {
+                "comment_id": 52805451,
+                "canonical_source_row_number": 3559095
+              },
+              {
+                "comment_id": 52421805,
+                "canonical_source_row_number": 1541901
+              }
+            ],
+            [
+              {
+                "comment_id": 11232050,
+                "canonical_source_row_number": 2373754
+              },
+              {
+                "comment_id": 16955980,
+                "canonical_source_row_number": 2373752
+              },
+              {
+                "comment_id": 21258131,
+                "canonical_source_row_number": 2373750
+              }
+            ],
+            [
+              {
+                "comment_id": 11948892,
+                "canonical_source_row_number": 3556240
+              },
+              {
+                "comment_id": 41849395,
+                "canonical_source_row_number": 3384750
+              },
+              {
+                "comment_id": 41975410,
+                "canonical_source_row_number": 3384749
+              }
+            ],
+            [
+              {
+                "comment_id": 54386860,
+                "canonical_source_row_number": 933890
+              },
+              {
+                "comment_id": 50120711,
+                "canonical_source_row_number": 1202572
+              },
+              {
+                "comment_id": 49243976,
+                "canonical_source_row_number": 191479
+              }
+            ],
+            [
+              {
+                "comment_id": 24203282,
+                "canonical_source_row_number": 2876589
+              },
+              {
+                "comment_id": 7791239,
+                "canonical_source_row_number": 1536500
+              },
+              {
+                "comment_id": 53036143,
+                "canonical_source_row_number": 2202852
+              }
+            ],
+            [
+              {
+                "comment_id": 3650781,
+                "canonical_source_row_number": 2372361
+              },
+              {
+                "comment_id": 4350694,
+                "canonical_source_row_number": 2372359
+              },
+              {
+                "comment_id": 9260615,
+                "canonical_source_row_number": 2274758
+              }
+            ],
+            [
+              {
+                "comment_id": 11773581,
+                "canonical_source_row_number": 2203853
+              },
+              {
+                "comment_id": 14613255,
+                "canonical_source_row_number": 2203342
+              },
+              {
+                "comment_id": 15112541,
+                "canonical_source_row_number": 2203341
+              }
+            ]
+          ],
+          "latency_ms": 349.679
+        }
+      }
     },
     {
       "id": "minimum_evidence",
-      "status": "pass",
-      "passed": true,
-      "checks": {
-        "failures": []
-      },
-      "failures": [],
-      "latency_ms": 327.996
+      "deterministic": true,
+      "channels": {
+        "lexical": {
+          "retrieval_mode": "lexical",
+          "product_ids": [
+            1019073,
+            11987519,
+            2192931,
+            289763,
+            9515014,
+            3022720,
+            3074140,
+            706241,
+            9264062,
+            11115802
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 6681333,
+                "canonical_source_row_number": 1531596
+              },
+              {
+                "comment_id": 11598088,
+                "canonical_source_row_number": 1531591
+              },
+              {
+                "comment_id": 26803149,
+                "canonical_source_row_number": 1531585
+              }
+            ],
+            [
+              {
+                "comment_id": 51583214,
+                "canonical_source_row_number": 2032503
+              },
+              {
+                "comment_id": 52163505,
+                "canonical_source_row_number": 2032501
+              },
+              {
+                "comment_id": 52283683,
+                "canonical_source_row_number": 2032498
+              }
+            ],
+            [
+              {
+                "comment_id": 12847971,
+                "canonical_source_row_number": 20409
+              },
+              {
+                "comment_id": 15187642,
+                "canonical_source_row_number": 19987
+              },
+              {
+                "comment_id": 16417318,
+                "canonical_source_row_number": 19985
+              }
+            ],
+            [
+              {
+                "comment_id": 1998043,
+                "canonical_source_row_number": 2197862
+              },
+              {
+                "comment_id": 3039030,
+                "canonical_source_row_number": 2197859
+              },
+              {
+                "comment_id": 4154751,
+                "canonical_source_row_number": 2197853
+              }
+            ],
+            [
+              {
+                "comment_id": 49993609,
+                "canonical_source_row_number": 2031269
+              },
+              {
+                "comment_id": 51910056,
+                "canonical_source_row_number": 3549719
+              },
+              {
+                "comment_id": 52241004,
+                "canonical_source_row_number": 3549714
+              }
+            ],
+            [
+              {
+                "comment_id": 11232050,
+                "canonical_source_row_number": 2373754
+              },
+              {
+                "comment_id": 16955980,
+                "canonical_source_row_number": 2373752
+              },
+              {
+                "comment_id": 21258131,
+                "canonical_source_row_number": 2373750
+              }
+            ],
+            [
+              {
+                "comment_id": 11948892,
+                "canonical_source_row_number": 3556240
+              },
+              {
+                "comment_id": 41849395,
+                "canonical_source_row_number": 3384750
+              },
+              {
+                "comment_id": 41975410,
+                "canonical_source_row_number": 3384749
+              }
+            ],
+            [
+              {
+                "comment_id": 2665683,
+                "canonical_source_row_number": 2702037
+              },
+              {
+                "comment_id": 3401530,
+                "canonical_source_row_number": 2611582
+              },
+              {
+                "comment_id": 3903932,
+                "canonical_source_row_number": 2532188
+              }
+            ],
+            [
+              {
+                "comment_id": 48975298,
+                "canonical_source_row_number": 1197465
+              },
+              {
+                "comment_id": 49045901,
+                "canonical_source_row_number": 1197464
+              },
+              {
+                "comment_id": 49700878,
+                "canonical_source_row_number": 1196889
+              }
+            ],
+            [
+              {
+                "comment_id": 49541379,
+                "canonical_source_row_number": 3208129
+              },
+              {
+                "comment_id": 50048668,
+                "canonical_source_row_number": 3118194
+              },
+              {
+                "comment_id": 50216215,
+                "canonical_source_row_number": 3378013
+              }
+            ]
+          ],
+          "latency_ms": 270.515
+        },
+        "semantic": {
+          "retrieval_mode": "semantic",
+          "product_ids": [
+            5233687,
+            81141,
+            4127525,
+            831818,
+            81909,
+            6507438,
+            81159,
+            81758,
+            202069,
+            2172239
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 33738389,
+                "canonical_source_row_number": 2038766
+              }
+            ],
+            [
+              {
+                "comment_id": 53368893,
+                "canonical_source_row_number": 1032972
+              },
+              {
+                "comment_id": 52805451,
+                "canonical_source_row_number": 3559095
+              },
+              {
+                "comment_id": 52421805,
+                "canonical_source_row_number": 1541901
+              }
+            ],
+            [
+              {
+                "comment_id": 54386860,
+                "canonical_source_row_number": 933890
+              },
+              {
+                "comment_id": 50120711,
+                "canonical_source_row_number": 1202572
+              },
+              {
+                "comment_id": 49243976,
+                "canonical_source_row_number": 191479
+              }
+            ],
+            [
+              {
+                "comment_id": 24203282,
+                "canonical_source_row_number": 2876589
+              },
+              {
+                "comment_id": 7791239,
+                "canonical_source_row_number": 1536500
+              },
+              {
+                "comment_id": 53036143,
+                "canonical_source_row_number": 2202852
+              }
+            ],
+            [
+              {
+                "comment_id": 2041108,
+                "canonical_source_row_number": 2542985
+              },
+              {
+                "comment_id": 53551008,
+                "canonical_source_row_number": 2542499
+              }
+            ],
+            [
+              {
+                "comment_id": 46237956,
+                "canonical_source_row_number": 3050766
+              }
+            ],
+            [
+              {
+                "comment_id": 52948297,
+                "canonical_source_row_number": 1541978
+              },
+              {
+                "comment_id": 53482223,
+                "canonical_source_row_number": 364018
+              },
+              {
+                "comment_id": 52124052,
+                "canonical_source_row_number": 2038632
+              }
+            ],
+            [
+              {
+                "comment_id": 53908370,
+                "canonical_source_row_number": 3862029
+              },
+              {
+                "comment_id": 51743162,
+                "canonical_source_row_number": 701044
+              },
+              {
+                "comment_id": 51500590,
+                "canonical_source_row_number": 195422
+              }
+            ],
+            [
+              {
+                "comment_id": 27367430,
+                "canonical_source_row_number": 855941
+              },
+              {
+                "comment_id": 40071034,
+                "canonical_source_row_number": 2030728
+              }
+            ],
+            [
+              {
+                "comment_id": 25541469,
+                "canonical_source_row_number": 2036104
+              }
+            ]
+          ],
+          "latency_ms": 407.302
+        },
+        "hybrid": {
+          "retrieval_mode": "hybrid",
+          "product_ids": [
+            1019073,
+            5233687,
+            81141,
+            11987519,
+            2192931,
+            4127525,
+            289763,
+            831818,
+            81909,
+            9515014
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 6681333,
+                "canonical_source_row_number": 1531596
+              },
+              {
+                "comment_id": 11598088,
+                "canonical_source_row_number": 1531591
+              },
+              {
+                "comment_id": 26803149,
+                "canonical_source_row_number": 1531585
+              }
+            ],
+            [
+              {
+                "comment_id": 33738389,
+                "canonical_source_row_number": 2038766
+              }
+            ],
+            [
+              {
+                "comment_id": 53368893,
+                "canonical_source_row_number": 1032972
+              },
+              {
+                "comment_id": 52805451,
+                "canonical_source_row_number": 3559095
+              },
+              {
+                "comment_id": 52421805,
+                "canonical_source_row_number": 1541901
+              }
+            ],
+            [
+              {
+                "comment_id": 51583214,
+                "canonical_source_row_number": 2032503
+              },
+              {
+                "comment_id": 52163505,
+                "canonical_source_row_number": 2032501
+              },
+              {
+                "comment_id": 52283683,
+                "canonical_source_row_number": 2032498
+              }
+            ],
+            [
+              {
+                "comment_id": 12847971,
+                "canonical_source_row_number": 20409
+              },
+              {
+                "comment_id": 15187642,
+                "canonical_source_row_number": 19987
+              },
+              {
+                "comment_id": 16417318,
+                "canonical_source_row_number": 19985
+              }
+            ],
+            [
+              {
+                "comment_id": 54386860,
+                "canonical_source_row_number": 933890
+              },
+              {
+                "comment_id": 50120711,
+                "canonical_source_row_number": 1202572
+              },
+              {
+                "comment_id": 49243976,
+                "canonical_source_row_number": 191479
+              }
+            ],
+            [
+              {
+                "comment_id": 1998043,
+                "canonical_source_row_number": 2197862
+              },
+              {
+                "comment_id": 3039030,
+                "canonical_source_row_number": 2197859
+              },
+              {
+                "comment_id": 4154751,
+                "canonical_source_row_number": 2197853
+              }
+            ],
+            [
+              {
+                "comment_id": 24203282,
+                "canonical_source_row_number": 2876589
+              },
+              {
+                "comment_id": 7791239,
+                "canonical_source_row_number": 1536500
+              },
+              {
+                "comment_id": 53036143,
+                "canonical_source_row_number": 2202852
+              }
+            ],
+            [
+              {
+                "comment_id": 2041108,
+                "canonical_source_row_number": 2542985
+              },
+              {
+                "comment_id": 53551008,
+                "canonical_source_row_number": 2542499
+              }
+            ],
+            [
+              {
+                "comment_id": 49993609,
+                "canonical_source_row_number": 2031269
+              },
+              {
+                "comment_id": 51910056,
+                "canonical_source_row_number": 3549719
+              },
+              {
+                "comment_id": 52241004,
+                "canonical_source_row_number": 3549714
+              }
+            ]
+          ],
+          "latency_ms": 437.21
+        }
+      }
     },
     {
       "id": "no_result",
-      "status": "pass",
-      "passed": true,
-      "checks": {
-        "failures": []
-      },
-      "failures": [],
-      "latency_ms": 76.377
+      "deterministic": true,
+      "channels": {
+        "lexical": {
+          "retrieval_mode": "lexical",
+          "product_ids": [],
+          "evidence": [],
+          "latency_ms": 62.94
+        },
+        "semantic": {
+          "retrieval_mode": "semantic",
+          "product_ids": [
+            773191,
+            2084318,
+            81259,
+            81141,
+            7247694,
+            1644747,
+            2084297,
+            81149,
+            9095524,
+            82004
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 35302444,
+                "canonical_source_row_number": 3720388
+              },
+              {
+                "comment_id": 54526925,
+                "canonical_source_row_number": 3046663
+              },
+              {
+                "comment_id": 38029734,
+                "canonical_source_row_number": 3720372
+              }
+            ],
+            [
+              {
+                "comment_id": 37299193,
+                "canonical_source_row_number": 3217438
+              },
+              {
+                "comment_id": 50232127,
+                "canonical_source_row_number": 3217245
+              },
+              {
+                "comment_id": 13284844,
+                "canonical_source_row_number": 1373986
+              }
+            ],
+            [
+              {
+                "comment_id": 45203796,
+                "canonical_source_row_number": 3859214
+              },
+              {
+                "comment_id": 52412760,
+                "canonical_source_row_number": 1707011
+              }
+            ],
+            [
+              {
+                "comment_id": 52568852,
+                "canonical_source_row_number": 1373659
+              },
+              {
+                "comment_id": 52579391,
+                "canonical_source_row_number": 1373658
+              }
+            ],
+            [
+              {
+                "comment_id": 41012056,
+                "canonical_source_row_number": 1195485
+              }
+            ],
+            [
+              {
+                "comment_id": 52761822,
+                "canonical_source_row_number": 1870115
+              },
+              {
+                "comment_id": 51403248,
+                "canonical_source_row_number": 1870130
+              },
+              {
+                "comment_id": 29941634,
+                "canonical_source_row_number": 185726
+              }
+            ],
+            [
+              {
+                "comment_id": 51190909,
+                "canonical_source_row_number": 2539783
+              },
+              {
+                "comment_id": 31377091,
+                "canonical_source_row_number": 3045908
+              },
+              {
+                "comment_id": 43468535,
+                "canonical_source_row_number": 1539119
+              }
+            ],
+            [
+              {
+                "comment_id": 49183714,
+                "canonical_source_row_number": 1709381
+              }
+            ],
+            [
+              {
+                "comment_id": 52645029,
+                "canonical_source_row_number": 3717998
+              },
+              {
+                "comment_id": 49530053,
+                "canonical_source_row_number": 3717731
+              }
+            ],
+            [
+              {
+                "comment_id": 53591382,
+                "canonical_source_row_number": 3043610
+              },
+              {
+                "comment_id": 50886438,
+                "canonical_source_row_number": 1872012
+              },
+              {
+                "comment_id": 54566613,
+                "canonical_source_row_number": 1701411
+              }
+            ]
+          ],
+          "latency_ms": 221.271
+        },
+        "hybrid": {
+          "retrieval_mode": "hybrid",
+          "product_ids": [
+            773191,
+            2084318,
+            81259,
+            81141,
+            7247694,
+            1644747,
+            2084297,
+            81149,
+            9095524,
+            82004
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 35302444,
+                "canonical_source_row_number": 3720388
+              },
+              {
+                "comment_id": 54526925,
+                "canonical_source_row_number": 3046663
+              },
+              {
+                "comment_id": 38029734,
+                "canonical_source_row_number": 3720372
+              }
+            ],
+            [
+              {
+                "comment_id": 37299193,
+                "canonical_source_row_number": 3217438
+              },
+              {
+                "comment_id": 50232127,
+                "canonical_source_row_number": 3217245
+              },
+              {
+                "comment_id": 13284844,
+                "canonical_source_row_number": 1373986
+              }
+            ],
+            [
+              {
+                "comment_id": 45203796,
+                "canonical_source_row_number": 3859214
+              },
+              {
+                "comment_id": 52412760,
+                "canonical_source_row_number": 1707011
+              }
+            ],
+            [
+              {
+                "comment_id": 52568852,
+                "canonical_source_row_number": 1373659
+              },
+              {
+                "comment_id": 52579391,
+                "canonical_source_row_number": 1373658
+              }
+            ],
+            [
+              {
+                "comment_id": 41012056,
+                "canonical_source_row_number": 1195485
+              }
+            ],
+            [
+              {
+                "comment_id": 52761822,
+                "canonical_source_row_number": 1870115
+              },
+              {
+                "comment_id": 51403248,
+                "canonical_source_row_number": 1870130
+              },
+              {
+                "comment_id": 29941634,
+                "canonical_source_row_number": 185726
+              }
+            ],
+            [
+              {
+                "comment_id": 51190909,
+                "canonical_source_row_number": 2539783
+              },
+              {
+                "comment_id": 31377091,
+                "canonical_source_row_number": 3045908
+              },
+              {
+                "comment_id": 43468535,
+                "canonical_source_row_number": 1539119
+              }
+            ],
+            [
+              {
+                "comment_id": 49183714,
+                "canonical_source_row_number": 1709381
+              }
+            ],
+            [
+              {
+                "comment_id": 52645029,
+                "canonical_source_row_number": 3717998
+              },
+              {
+                "comment_id": 49530053,
+                "canonical_source_row_number": 3717731
+              }
+            ],
+            [
+              {
+                "comment_id": 53591382,
+                "canonical_source_row_number": 3043610
+              },
+              {
+                "comment_id": 50886438,
+                "canonical_source_row_number": 1872012
+              },
+              {
+                "comment_id": 54566613,
+                "canonical_source_row_number": 1701411
+              }
+            ]
+          ],
+          "latency_ms": 257.76
+        }
+      }
     },
     {
-      "id": "comparison",
-      "status": "pass",
-      "passed": true,
-      "checks": {
-        "failures": []
-      },
-      "failures": [],
-      "latency_ms": 1.142
+      "id": "semantic_paraphrase_lightweight",
+      "deterministic": true,
+      "channels": {
+        "lexical": {
+          "retrieval_mode": "lexical",
+          "product_ids": [
+            715340,
+            8477595,
+            781332,
+            134582,
+            8026601,
+            6267904,
+            1023681,
+            1023904,
+            183271,
+            331911
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 15942518,
+                "canonical_source_row_number": 3118232
+              },
+              {
+                "comment_id": 17103458,
+                "canonical_source_row_number": 2368983
+              },
+              {
+                "comment_id": 38128103,
+                "canonical_source_row_number": 1867919
+              }
+            ],
+            [
+              {
+                "comment_id": 40704921,
+                "canonical_source_row_number": 1700409
+              },
+              {
+                "comment_id": 41291345,
+                "canonical_source_row_number": 1700405
+              },
+              {
+                "comment_id": 53409532,
+                "canonical_source_row_number": 1700293
+              }
+            ],
+            [
+              {
+                "comment_id": 26617069,
+                "canonical_source_row_number": 2200473
+              },
+              {
+                "comment_id": 47059733,
+                "canonical_source_row_number": 1869165
+              },
+              {
+                "comment_id": 25838493,
+                "canonical_source_row_number": 2108247
+              }
+            ],
+            [
+              {
+                "comment_id": 12496963,
+                "canonical_source_row_number": 861162
+              },
+              {
+                "comment_id": 5818534,
+                "canonical_source_row_number": 861571
+              },
+              {
+                "comment_id": 10441398,
+                "canonical_source_row_number": 861175
+              }
+            ],
+            [
+              {
+                "comment_id": 36616843,
+                "canonical_source_row_number": 520860
+              },
+              {
+                "comment_id": 36758070,
+                "canonical_source_row_number": 520858
+              },
+              {
+                "comment_id": 41103640,
+                "canonical_source_row_number": 3851207
+              }
+            ],
+            [
+              {
+                "comment_id": 35985400,
+                "canonical_source_row_number": 1026583
+              },
+              {
+                "comment_id": 40525524,
+                "canonical_source_row_number": 23637
+              },
+              {
+                "comment_id": 48353882,
+                "canonical_source_row_number": 3852197
+              }
+            ],
+            [
+              {
+                "comment_id": 52896768,
+                "canonical_source_row_number": 3850342
+              },
+              {
+                "comment_id": 53812211,
+                "canonical_source_row_number": 689616
+              },
+              {
+                "comment_id": 53825217,
+                "canonical_source_row_number": 689615
+              }
+            ],
+            [
+              {
+                "comment_id": 49775786,
+                "canonical_source_row_number": 521245
+              },
+              {
+                "comment_id": 53659798,
+                "canonical_source_row_number": 3714161
+              },
+              {
+                "comment_id": 48115449,
+                "canonical_source_row_number": 597436
+              }
+            ],
+            [
+              {
+                "comment_id": 4649927,
+                "canonical_source_row_number": 183091
+              },
+              {
+                "comment_id": 49402320,
+                "canonical_source_row_number": 21684
+              },
+              {
+                "comment_id": 9259865,
+                "canonical_source_row_number": 183083
+              }
+            ],
+            [
+              {
+                "comment_id": 24179955,
+                "canonical_source_row_number": 1101958
+              },
+              {
+                "comment_id": 6988267,
+                "canonical_source_row_number": 3554207
+              },
+              {
+                "comment_id": 9979400,
+                "canonical_source_row_number": 3382484
+              }
+            ]
+          ],
+          "latency_ms": 377.864
+        },
+        "semantic": {
+          "retrieval_mode": "semantic",
+          "product_ids": [
+            81149,
+            2084297,
+            81159,
+            81141,
+            2084318,
+            1644745,
+            6267901,
+            773199,
+            1645222,
+            4423755
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 51310481,
+                "canonical_source_row_number": 1708947
+              },
+              {
+                "comment_id": 44912810,
+                "canonical_source_row_number": 1709847
+              }
+            ],
+            [
+              {
+                "comment_id": 43468535,
+                "canonical_source_row_number": 1539119
+              },
+              {
+                "comment_id": 42651663,
+                "canonical_source_row_number": 1539125
+              },
+              {
+                "comment_id": 37461727,
+                "canonical_source_row_number": 3382504
+              }
+            ],
+            [
+              {
+                "comment_id": 52555044,
+                "canonical_source_row_number": 1707098
+              },
+              {
+                "comment_id": 52237657,
+                "canonical_source_row_number": 2038625
+              },
+              {
+                "comment_id": 51478501,
+                "canonical_source_row_number": 528380
+              }
+            ],
+            [
+              {
+                "comment_id": 53318822,
+                "canonical_source_row_number": 1032974
+              },
+              {
+                "comment_id": 52579391,
+                "canonical_source_row_number": 1373658
+              },
+              {
+                "comment_id": 54261971,
+                "canonical_source_row_number": 3557501
+              }
+            ],
+            [
+              {
+                "comment_id": 32876279,
+                "canonical_source_row_number": 1707728
+              },
+              {
+                "comment_id": 20545926,
+                "canonical_source_row_number": 1878878
+              },
+              {
+                "comment_id": 19400733,
+                "canonical_source_row_number": 3217538
+              }
+            ],
+            [
+              {
+                "comment_id": 50032532,
+                "canonical_source_row_number": 3378436
+              },
+              {
+                "comment_id": 51354305,
+                "canonical_source_row_number": 2874216
+              },
+              {
+                "comment_id": 51736523,
+                "canonical_source_row_number": 2874208
+              }
+            ],
+            [
+              {
+                "comment_id": 42052677,
+                "canonical_source_row_number": 858627
+              }
+            ],
+            [
+              {
+                "comment_id": 48172781,
+                "canonical_source_row_number": 2540258
+              }
+            ],
+            [
+              {
+                "comment_id": 52508533,
+                "canonical_source_row_number": 2873461
+              }
+            ],
+            [
+              {
+                "comment_id": 46268054,
+                "canonical_source_row_number": 428966
+              }
+            ]
+          ],
+          "latency_ms": 519.558
+        },
+        "hybrid": {
+          "retrieval_mode": "hybrid",
+          "product_ids": [
+            81149,
+            715340,
+            2084297,
+            8477595,
+            81159,
+            781332,
+            81141,
+            134582,
+            2084318,
+            8026601
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 51310481,
+                "canonical_source_row_number": 1708947
+              },
+              {
+                "comment_id": 44912810,
+                "canonical_source_row_number": 1709847
+              }
+            ],
+            [
+              {
+                "comment_id": 15942518,
+                "canonical_source_row_number": 3118232
+              },
+              {
+                "comment_id": 17103458,
+                "canonical_source_row_number": 2368983
+              },
+              {
+                "comment_id": 38128103,
+                "canonical_source_row_number": 1867919
+              }
+            ],
+            [
+              {
+                "comment_id": 43468535,
+                "canonical_source_row_number": 1539119
+              },
+              {
+                "comment_id": 42651663,
+                "canonical_source_row_number": 1539125
+              },
+              {
+                "comment_id": 37461727,
+                "canonical_source_row_number": 3382504
+              }
+            ],
+            [
+              {
+                "comment_id": 40704921,
+                "canonical_source_row_number": 1700409
+              },
+              {
+                "comment_id": 41291345,
+                "canonical_source_row_number": 1700405
+              },
+              {
+                "comment_id": 53409532,
+                "canonical_source_row_number": 1700293
+              }
+            ],
+            [
+              {
+                "comment_id": 52555044,
+                "canonical_source_row_number": 1707098
+              },
+              {
+                "comment_id": 52237657,
+                "canonical_source_row_number": 2038625
+              },
+              {
+                "comment_id": 51478501,
+                "canonical_source_row_number": 528380
+              }
+            ],
+            [
+              {
+                "comment_id": 26617069,
+                "canonical_source_row_number": 2200473
+              },
+              {
+                "comment_id": 47059733,
+                "canonical_source_row_number": 1869165
+              },
+              {
+                "comment_id": 25838493,
+                "canonical_source_row_number": 2108247
+              }
+            ],
+            [
+              {
+                "comment_id": 53318822,
+                "canonical_source_row_number": 1032974
+              },
+              {
+                "comment_id": 52579391,
+                "canonical_source_row_number": 1373658
+              },
+              {
+                "comment_id": 54261971,
+                "canonical_source_row_number": 3557501
+              }
+            ],
+            [
+              {
+                "comment_id": 12496963,
+                "canonical_source_row_number": 861162
+              },
+              {
+                "comment_id": 5818534,
+                "canonical_source_row_number": 861571
+              },
+              {
+                "comment_id": 10441398,
+                "canonical_source_row_number": 861175
+              }
+            ],
+            [
+              {
+                "comment_id": 32876279,
+                "canonical_source_row_number": 1707728
+              },
+              {
+                "comment_id": 20545926,
+                "canonical_source_row_number": 1878878
+              },
+              {
+                "comment_id": 19400733,
+                "canonical_source_row_number": 3217538
+              }
+            ],
+            [
+              {
+                "comment_id": 36616843,
+                "canonical_source_row_number": 520860
+              },
+              {
+                "comment_id": 36758070,
+                "canonical_source_row_number": 520858
+              },
+              {
+                "comment_id": 41103640,
+                "canonical_source_row_number": 3851207
+              }
+            ]
+          ],
+          "latency_ms": 592.919
+        }
+      }
+    },
+    {
+      "id": "semantic_paraphrase_no_white_cast",
+      "deterministic": true,
+      "channels": {
+        "lexical": {
+          "retrieval_mode": "lexical",
+          "product_ids": [
+            3022720,
+            781332,
+            1110394,
+            8078624,
+            9321281,
+            735953,
+            1093326,
+            5715618,
+            82002,
+            81141
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 33945491,
+                "canonical_source_row_number": 2373740
+              },
+              {
+                "comment_id": 11232050,
+                "canonical_source_row_number": 2373754
+              },
+              {
+                "comment_id": 32930661,
+                "canonical_source_row_number": 2373741
+              }
+            ],
+            [
+              {
+                "comment_id": 11594872,
+                "canonical_source_row_number": 2370682
+              },
+              {
+                "comment_id": 26617069,
+                "canonical_source_row_number": 2200473
+              },
+              {
+                "comment_id": 36884634,
+                "canonical_source_row_number": 2031678
+              }
+            ],
+            [
+              {
+                "comment_id": 4108039,
+                "canonical_source_row_number": 182934
+              },
+              {
+                "comment_id": 4062063,
+                "canonical_source_row_number": 182935
+              },
+              {
+                "comment_id": 4575990,
+                "canonical_source_row_number": 182932
+              }
+            ],
+            [
+              {
+                "comment_id": 35065541,
+                "canonical_source_row_number": 1024328
+              },
+              {
+                "comment_id": 35487332,
+                "canonical_source_row_number": 1024326
+              },
+              {
+                "comment_id": 38065108,
+                "canonical_source_row_number": 1363024
+              }
+            ],
+            [
+              {
+                "comment_id": 49376011,
+                "canonical_source_row_number": 859638
+              },
+              {
+                "comment_id": 42216445,
+                "canonical_source_row_number": 1026402
+              },
+              {
+                "comment_id": 46141332,
+                "canonical_source_row_number": 1026396
+              }
+            ],
+            [
+              {
+                "comment_id": 27851560,
+                "canonical_source_row_number": 3716247
+              },
+              {
+                "comment_id": 29650026,
+                "canonical_source_row_number": 3716231
+              },
+              {
+                "comment_id": 36881812,
+                "canonical_source_row_number": 2033689
+              }
+            ],
+            [
+              {
+                "comment_id": 32241434,
+                "canonical_source_row_number": 1874246
+              },
+              {
+                "comment_id": 7744630,
+                "canonical_source_row_number": 2036414
+              },
+              {
+                "comment_id": 12181642,
+                "canonical_source_row_number": 2036401
+              }
+            ],
+            [
+              {
+                "comment_id": 45383942,
+                "canonical_source_row_number": 2033606
+              },
+              {
+                "comment_id": 44086792,
+                "canonical_source_row_number": 2033630
+              },
+              {
+                "comment_id": 46602727,
+                "canonical_source_row_number": 1941376
+              }
+            ],
+            [
+              {
+                "comment_id": 32952847,
+                "canonical_source_row_number": 361434
+              },
+              {
+                "comment_id": 5441890,
+                "canonical_source_row_number": 526392
+              },
+              {
+                "comment_id": 22175635,
+                "canonical_source_row_number": 361440
+              }
+            ],
+            [
+              {
+                "comment_id": 52447651,
+                "canonical_source_row_number": 1541895
+              },
+              {
+                "comment_id": 52599228,
+                "canonical_source_row_number": 1373654
+              },
+              {
+                "comment_id": 52867248,
+                "canonical_source_row_number": 3559087
+              }
+            ]
+          ],
+          "latency_ms": 330.784
+        },
+        "semantic": {
+          "retrieval_mode": "semantic",
+          "product_ids": [
+            81159,
+            81141,
+            81149,
+            81284,
+            847159,
+            2897189,
+            4170477,
+            5715618,
+            781332,
+            81128
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 53195265,
+                "canonical_source_row_number": 1541962
+              },
+              {
+                "comment_id": 52729708,
+                "canonical_source_row_number": 1707087
+              },
+              {
+                "comment_id": 52237657,
+                "canonical_source_row_number": 2038625
+              }
+            ],
+            [
+              {
+                "comment_id": 52410126,
+                "canonical_source_row_number": 1541902
+              },
+              {
+                "comment_id": 52911929,
+                "canonical_source_row_number": 3559085
+              },
+              {
+                "comment_id": 52421805,
+                "canonical_source_row_number": 1541901
+              }
+            ],
+            [
+              {
+                "comment_id": 53677717,
+                "canonical_source_row_number": 2884929
+              },
+              {
+                "comment_id": 53541453,
+                "canonical_source_row_number": 699670
+              },
+              {
+                "comment_id": 53651133,
+                "canonical_source_row_number": 1544868
+              }
+            ],
+            [
+              {
+                "comment_id": 22637745,
+                "canonical_source_row_number": 2375445
+              },
+              {
+                "comment_id": 53787427,
+                "canonical_source_row_number": 2541427
+              },
+              {
+                "comment_id": 25682730,
+                "canonical_source_row_number": 3047174
+              }
+            ],
+            [
+              {
+                "comment_id": 3205791,
+                "canonical_source_row_number": 3559016
+              },
+              {
+                "comment_id": 14621378,
+                "canonical_source_row_number": 2040663
+              }
+            ],
+            [
+              {
+                "comment_id": 13918583,
+                "canonical_source_row_number": 2200594
+              }
+            ],
+            [
+              {
+                "comment_id": 37896969,
+                "canonical_source_row_number": 3549142
+              },
+              {
+                "comment_id": 33632631,
+                "canonical_source_row_number": 3713982
+              }
+            ],
+            [
+              {
+                "comment_id": 51809420,
+                "canonical_source_row_number": 1535787
+              },
+              {
+                "comment_id": 52689887,
+                "canonical_source_row_number": 1535409
+              },
+              {
+                "comment_id": 53152938,
+                "canonical_source_row_number": 1439030
+              }
+            ],
+            [
+              {
+                "comment_id": 11594872,
+                "canonical_source_row_number": 2370682
+              },
+              {
+                "comment_id": 27685688,
+                "canonical_source_row_number": 2200036
+              },
+              {
+                "comment_id": 38828943,
+                "canonical_source_row_number": 3210040
+              }
+            ],
+            [
+              {
+                "comment_id": 50550579,
+                "canonical_source_row_number": 1033044
+              },
+              {
+                "comment_id": 49057224,
+                "canonical_source_row_number": 3386258
+              }
+            ]
+          ],
+          "latency_ms": 469.666
+        },
+        "hybrid": {
+          "retrieval_mode": "hybrid",
+          "product_ids": [
+            781332,
+            81141,
+            5715618,
+            81159,
+            3022720,
+            81149,
+            1110394,
+            81284,
+            8078624,
+            847159
+          ],
+          "evidence": [
+            [
+              {
+                "comment_id": 11594872,
+                "canonical_source_row_number": 2370682
+              },
+              {
+                "comment_id": 27685688,
+                "canonical_source_row_number": 2200036
+              },
+              {
+                "comment_id": 38828943,
+                "canonical_source_row_number": 3210040
+              }
+            ],
+            [
+              {
+                "comment_id": 52410126,
+                "canonical_source_row_number": 1541902
+              },
+              {
+                "comment_id": 52911929,
+                "canonical_source_row_number": 3559085
+              },
+              {
+                "comment_id": 52421805,
+                "canonical_source_row_number": 1541901
+              }
+            ],
+            [
+              {
+                "comment_id": 51809420,
+                "canonical_source_row_number": 1535787
+              },
+              {
+                "comment_id": 52689887,
+                "canonical_source_row_number": 1535409
+              },
+              {
+                "comment_id": 53152938,
+                "canonical_source_row_number": 1439030
+              }
+            ],
+            [
+              {
+                "comment_id": 53195265,
+                "canonical_source_row_number": 1541962
+              },
+              {
+                "comment_id": 52729708,
+                "canonical_source_row_number": 1707087
+              },
+              {
+                "comment_id": 52237657,
+                "canonical_source_row_number": 2038625
+              }
+            ],
+            [
+              {
+                "comment_id": 33945491,
+                "canonical_source_row_number": 2373740
+              },
+              {
+                "comment_id": 11232050,
+                "canonical_source_row_number": 2373754
+              },
+              {
+                "comment_id": 32930661,
+                "canonical_source_row_number": 2373741
+              }
+            ],
+            [
+              {
+                "comment_id": 53677717,
+                "canonical_source_row_number": 2884929
+              },
+              {
+                "comment_id": 53541453,
+                "canonical_source_row_number": 699670
+              },
+              {
+                "comment_id": 53651133,
+                "canonical_source_row_number": 1544868
+              }
+            ],
+            [
+              {
+                "comment_id": 4108039,
+                "canonical_source_row_number": 182934
+              },
+              {
+                "comment_id": 4062063,
+                "canonical_source_row_number": 182935
+              },
+              {
+                "comment_id": 4575990,
+                "canonical_source_row_number": 182932
+              }
+            ],
+            [
+              {
+                "comment_id": 22637745,
+                "canonical_source_row_number": 2375445
+              },
+              {
+                "comment_id": 53787427,
+                "canonical_source_row_number": 2541427
+              },
+              {
+                "comment_id": 25682730,
+                "canonical_source_row_number": 3047174
+              }
+            ],
+            [
+              {
+                "comment_id": 35065541,
+                "canonical_source_row_number": 1024328
+              },
+              {
+                "comment_id": 35487332,
+                "canonical_source_row_number": 1024326
+              },
+              {
+                "comment_id": 38065108,
+                "canonical_source_row_number": 1363024
+              }
+            ],
+            [
+              {
+                "comment_id": 3205791,
+                "canonical_source_row_number": 3559016
+              },
+              {
+                "comment_id": 14621378,
+                "canonical_source_row_number": 2040663
+              }
+            ]
+          ],
+          "latency_ms": 494.061
+        }
+      }
     }
-  ],
-  "index": {
-    "products": 1048,
-    "canonical_comments": 53365,
-    "artifact_bytes": 4429573,
-    "build_runtime_seconds": 3.298857960035093
-  }
+  ]
 }

@@ -87,3 +87,39 @@ def test_card_summary_is_compact_and_keeps_a_bidi_safe_citation() -> None:
     visible = summary.replace("\u2066", "").replace("\u2069", "")
     assert len(summary) < 230
     assert "[نظر 11، ردیف 31]" in visible
+
+
+def test_retrieval_mode_badges_are_deterministic_and_never_mislabel_fallback() -> None:
+    assert demo.retrieval_mode_label("hybrid") == "Hybrid RAG: واژگانی + معنایی"
+    assert demo.retrieval_mode_label("semantic") == "بازیابی معنایی"
+    assert demo.retrieval_mode_label("lexical_fallback") == "بازیابی واژگانی (fallback)"
+    assert demo.retrieval_mode_label("lexical") is None
+    assert demo.retrieval_mode_label(None) is None
+
+
+def test_answer_header_renders_provider_and_actual_retrieval_badges() -> None:
+    class _Container:
+        def __enter__(self): return self
+        def __exit__(self, *_args): return False
+
+    class _Streamlit:
+        def __init__(self): self.markdowns: list[str] = []
+        def container(self, **_kwargs): return _Container()
+        def markdown(self, value, **_kwargs): self.markdowns.append(value)
+        def caption(self, _value): pass
+
+    st = _Streamlit()
+    demo._display_answer(st, {"source": "groq", "text": "پاسخ"}, "semantic")
+    header = next(value for value in st.markdowns if "answer-badges" in value)
+    assert "Groq" in header and "بازیابی معنایی" in header
+
+    fallback = _Streamlit()
+    demo._display_answer(
+        fallback,
+        {"source": "deterministic_fallback", "text": "پاسخ"},
+        "lexical_fallback",
+    )
+    fallback_header = next(value for value in fallback.markdowns if "answer-badges" in value)
+    assert "پاسخ محلی" in fallback_header
+    assert "بازیابی واژگانی (fallback)" in fallback_header
+    assert "Hybrid RAG" not in fallback_header

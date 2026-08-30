@@ -96,6 +96,26 @@ results. Snapshot tests will validate Persian labels and prohibit unsafe wording
 
 ## Optional follow-ons (not a prerequisite)
 
-- Offline embeddings and a hybrid ranker, measured against the fixed evaluation set
+### 7. Hybrid Semantic RAG — completed artifact and retrieval checkpoint
+
+1. Build a separate semantic artifact from published `sunscreen_products.parquet` and
+   `sunscreen_comments_canonical.parquet` only; never rescan raw CSV.
+2. Use CPU-only `intfloat/multilingual-e5-small` with `passage: ` corpus prefixes and persist
+   normalized float32 vectors plus explicit vector-to-comment provenance.
+3. Validate artifact checksums, row alignment, dimension, dtype, and norms before atomically
+   publishing `_SUCCESS`.
+4. Load only a successful artifact after checksum, manifest-property, mmap shape/dtype/norm, and
+   metadata-alignment validation. Embed `query: ` on CPU with a process-cached model.
+5. Retrieve exact normalized-vector dot-product comment hits, use each product's best bounded
+   hits to avoid review-volume bias, and preserve comment/source provenance.
+6. Fuse unchanged lexical and semantic product ranks with Reciprocal Rank Fusion
+   `sum(1 / (60 + rank))`; stable ties use product ID and source provenance. Apply filters before
+   channel ranking. Any semantic failure explicitly uses lexical fallback.
+7. Extend offline cases with low-overlap Persian paraphrases and record three-channel
+   comparison, evidence, latency, and deterministic repetitions. Groq sees bounded excerpts only.
+
+## Optional follow-ons (not a prerequisite)
+
+- Offline semantic artifact and later hybrid ranker, measured against the fixed evaluation set
 - Kaggle GPU preparation notebook/script for experiments only
 - Additional evidence facets if they preserve complete ID traceability

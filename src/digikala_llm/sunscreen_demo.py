@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from digikala_llm.sunscreen_comparison import SunscreenComparisonService
+from digikala_llm.sunscreen_hybrid import DEFAULT_SEMANTIC_DIR, HybridSunscreenRetriever
 from digikala_llm.sunscreen_llm import GroundedAssistant
 from digikala_llm.sunscreen_retrieval import DEFAULT_DATA_DIR, SunscreenLexicalIndex
 
@@ -44,6 +45,7 @@ h2 { font-size:1.3rem; margin:1.65rem 0 .7rem; }
 [data-testid='stExpander'] { border-color:var(--line); border-radius:.65rem; }
 .provider-badge,.rank-badge { display:inline-block; border:1px solid #b9d6d7; border-radius:999px; color:#19565c; background:#edf7f6; font-size:.75rem; font-weight:750; padding:.16rem .52rem; }
 .provider-badge--fallback { border-color:#d8dce2; color:#5d6775; background:#f5f6f8; }
+.answer-badges { display:flex; flex-wrap:wrap; gap:.35rem; margin:.1rem 0 .45rem; }
 .rank-badge--alternative { border-color:#dde1e6; color:#596575; background:#f8f9fa; }
 .hero-kicker { color:var(--teal); font-size:.78rem; font-weight:750; letter-spacing:.035em; margin:0; }
 .hero-mark { align-items:center; background:#e8f2f1; border-radius:50%; color:var(--teal); display:inline-flex; font-size:1.05rem; height:2.15rem; justify-content:center; margin-left:.55rem; width:2.15rem; }
@@ -108,14 +110,36 @@ def _render_evidence(st: Any, evidence: list[dict[str, Any]], title: str = "مش
             st.caption("شواهد کوتاهِ بازیابی‌شده‌ای در دسترس نیست.")
 
 
-def _display_answer(st: Any, answer: dict[str, Any]) -> None:
+def retrieval_mode_label(retrieval_mode: str | None) -> str | None:
+    """Return a user-facing badge only for a retrieval mode actually returned by the retriever."""
+    return {
+        "hybrid": "Hybrid RAG: واژگانی + معنایی",
+        "semantic": "بازیابی معنایی",
+        "lexical_fallback": "بازیابی واژگانی (fallback)",
+    }.get(retrieval_mode)
+
+
+def _display_answer(
+    st: Any, answer: dict[str, Any], retrieval_mode: str | None = None
+) -> None:
     with st.container(border=True):
         st.markdown('<p class="answer-heading">جمع‌بندی دستیار</p>', unsafe_allow_html=True)
-        if answer["source"] == "deterministic_fallback":
-            st.markdown('<span class="provider-badge provider-badge--fallback">پاسخ محلی</span>', unsafe_allow_html=True)
-            st.caption("مدل زبانی در این پاسخ استفاده نشده است.")
+        provider = (
+            '<span class="provider-badge provider-badge--fallback">پاسخ محلی</span>'
+            if answer["source"] == "deterministic_fallback"
+            else '<span class="provider-badge">Groq</span>'
+        )
+        retrieval = retrieval_mode_label(retrieval_mode)
+        if retrieval is not None:
+            st.markdown(
+                f'<div class="answer-badges">{provider}'
+                f'<span class="provider-badge">{retrieval}</span></div>',
+                unsafe_allow_html=True,
+            )
         else:
-            st.markdown('<span class="provider-badge">Groq</span>', unsafe_allow_html=True)
+            st.markdown(provider, unsafe_allow_html=True)
+        if answer["source"] == "deterministic_fallback":
+            st.caption("مدل زبانی در این پاسخ استفاده نشده است.")
         rendered = _CITATION.sub(
             lambda match: f"[نظر \u2066{match.group(1)}\u2069، ردیف \u2066{match.group(2)}\u2069]",
             answer["text"],
@@ -185,8 +209,8 @@ def main() -> None:
     st.markdown(APP_CSS, unsafe_allow_html=True)
 
     @st.cache_resource
-    def load(path: str) -> SunscreenLexicalIndex:
-        return SunscreenLexicalIndex(Path(path))
+    def load(path: str) -> HybridSunscreenRetriever:
+        return HybridSunscreenRetriever(SunscreenLexicalIndex(Path(path)), DEFAULT_SEMANTIC_DIR)
 
     with st.container(border=True):
         st.markdown('<span class="hero-mark" aria-hidden="true">☼</span>', unsafe_allow_html=True)
@@ -220,7 +244,7 @@ def main() -> None:
             key="sunscreen_query",
             placeholder="مثلاً: ضد آفتاب سبک و بدون رنگ",
         )
-        brands = sorted({product["brand"] for product in index.products.values() if product["brand"]})
+        brands = sorted({product["brand"] for product in index.lexical.products.values() if product["brand"]})
         with st.expander("تنظیمات پیشرفته", expanded=False):
             first, second, third, fourth = st.columns(4)
             minimum_price = first.number_input("حداقل قیمت تاریخی (ریال)", min_value=0, value=0)
@@ -248,7 +272,7 @@ def main() -> None:
     if not result:
         return
     answer = st.session_state.sunscreen_answer
-    _display_answer(st, answer)
+    _display_answer(st, answer, result.get("retrieval_mode"))
     if not result["results"]:
         st.warning("برای این پرسش و تنظیمات، محصول منطبقی پیدا نشد.")
         return
@@ -263,7 +287,7 @@ def main() -> None:
             st.caption("برای مقایسه، دو تا چهار محصول را با دکمهٔ هر کارت انتخاب کنید.")
         run_comparison = len(selected) >= 2 and st.button("مقایسهٔ انتخاب‌ها", type="primary")
     if run_comparison:
-        comparison = SunscreenComparisonService(index).compare(selected, query=query)
+        comparison = SunscreenComparisonService(index.lexical).compare(selected, query=query)
         answer = GroundedAssistant().answer_comparison(query, comparison)
         _render_comparison(st, comparison, answer)
 

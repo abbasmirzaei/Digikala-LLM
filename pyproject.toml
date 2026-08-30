@@ -21,6 +21,7 @@ dev = [
   "seaborn>=0.13,<1",
 ]
 demo = ["streamlit>=1.39,<2", "groq>=0.20"]
+semantic = ["sentence-transformers>=6,<7", "torch>=2.13,<3"]
 
 [project.scripts]
 digikala-eda = "digikala_llm.eda:main"
@@ -31,6 +32,7 @@ digikala-build-sunscreen = "digikala_llm.sunscreen_builder:main"
 digikala-search-sunscreen = "digikala_llm.sunscreen_retrieval:main"
 digikala-compare-sunscreen = "digikala_llm.sunscreen_comparison:main"
 digikala-evaluate-sunscreen = "digikala_llm.sunscreen_evaluation:main"
+digikala-build-sunscreen-semantic = "digikala_llm.sunscreen_semantic_builder:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
