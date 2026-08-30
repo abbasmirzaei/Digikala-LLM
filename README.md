@@ -47,6 +47,18 @@ The evaluation command tests only deterministic retrieval and comparison semanti
 requires Groq, API access, or a key. Groq request tests are mocked and assert the bounded context,
 grounding instruction, visible citations, error fallback, and absence of model discovery.
 
+### Recommendation-status baseline
+
+The optional `ml` extra evaluates authoritative canonical `recommendation_status` labels using
+text-only title/body features and a deterministic product-disjoint holdout. It reports Macro F1
+for a most-frequent dummy and character-TF-IDF logistic-regression baseline; it neither changes
+the application nor infers/relabels source targets.
+
+```bash
+pip install -e ".[ml]"
+digikala-evaluate-recommendation-status
+```
+
 نسخه‌ی اول یک سیستم هوشمند جست‌وجو و تحلیل محصول و نظر کاربران، مطابق معماری فاز صفر.
 
 ## وضعیت فعلی

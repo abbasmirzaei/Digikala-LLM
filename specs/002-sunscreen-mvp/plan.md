@@ -114,6 +114,19 @@ results. Snapshot tests will validate Persian labels and prohibit unsafe wording
 7. Extend offline cases with low-overlap Persian paraphrases and record three-channel
    comparison, evidence, latency, and deterministic repetitions. Groq sees bounded excerpts only.
 
+### 8. Recommendation-status Macro-F1 baseline
+
+1. Read only `sunscreen_comments_canonical.parquet`; retain nonblank authoritative target strings
+   exactly and count missing/invalid targets explicitly.
+2. Form features exclusively from cleaned title and body. Use deterministic `char_wb` TF-IDF
+   (3–5 grams, `min_df=2`, sublinear TF) and balanced `LogisticRegression` (`lbfgs`, `C=1.0`,
+   `max_iter=1000`) because the observed
+   majority/minority ratio exceeds 9:1; compare with most-frequent `DummyClassifier`.
+3. Use `StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=20260830)` and select the
+   first valid deterministic fold whose train and test both contain every label. Product IDs may
+   not overlap. Report Macro F1 as primary, plus class metrics, accuracy, true-row/predicted-column
+   matrix, timings, and RSS. Do not tune on the held-out split.
+
 ## Optional follow-ons (not a prerequisite)
 
 - Offline semantic artifact and later hybrid ranker, measured against the fixed evaluation set

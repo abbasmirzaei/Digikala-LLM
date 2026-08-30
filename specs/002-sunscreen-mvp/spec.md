@@ -103,6 +103,18 @@ canonical source provenance. Failed semantic loading or encoding must explicitly
 fallback without exposing exceptions to ordinary users. Only bounded provenance-bearing evidence
 may reach Groq; no vectors or raw scores may enter prompts or the normal UI.
 
+### F10 — Recommendation-status baseline evaluation
+
+Using only published canonical sunscreen comments, the project shall evaluate an honest text-only
+prediction baseline for authoritative `recommendation_status` labels. Blank/non-string target
+values are excluded and counted; all remaining labels are preserved verbatim. A deterministic
+product-group-aware holdout shall keep product IDs disjoint while retaining every class in both
+splits. The report shall compare most-frequent `DummyClassifier` and character-TF-IDF
+`LogisticRegression` baselines using Macro F1, per-class metrics, accuracy, and a labelled
+true-row/predicted-column confusion matrix. It must not use ratings, reactions, buyer status,
+product aggregates, or any target/post-outcome field as features, and it makes no claim beyond the
+sunscreen subset.
+
 ## Safety and truthfulness requirements
 
 - Never call a historical price “current,” “today,” “live,” or imply stock or availability.
@@ -150,6 +162,8 @@ may reach Groq; no vectors or raw scores may enter prompts or the normal UI.
     two-product Persian comparison without network access or a GPU.
 11. Hybrid evaluation records lexical-only, semantic-only, and RRF-fused product IDs, bounded
     evidence, latency, and repeated-run equality for fixed lexical and Persian paraphrase cases.
+12. Recommendation-status evaluation writes deterministic JSON/Markdown reports with label counts,
+    group-disjoint split counts, dummy/text Macro F1, per-class metrics, and a labelled matrix.
 
 ## Constraints and decisions
 

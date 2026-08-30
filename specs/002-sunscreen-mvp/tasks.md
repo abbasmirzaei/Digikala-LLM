@@ -60,6 +60,9 @@
 - [x] **O1c — Hybrid evaluation and safeguards.** Add low-overlap Persian paraphrases; compare
   lexical, semantic, and hybrid IDs/evidence/latency/determinism; assert lexical fallback and
   prohibit vectors or raw scores from Groq context and normal UI.
+- [x] **O1d — Recommendation-status Macro-F1 baseline.** Evaluate preserved canonical labels with
+  a deterministic product-group holdout, most-frequent dummy and character-TF-IDF logistic
+  baselines, Macro F1/per-class metrics/confusion matrix, and leakage-safe reports.
 - [ ] **O2 — Kaggle GPU preparation.** Supply an optional reproducible experiment setup only; no
   hosted runtime is required for final presentation.
 - [ ] **O3 — Extra visual polish.** Improve presentation styling only after the scripted demo and

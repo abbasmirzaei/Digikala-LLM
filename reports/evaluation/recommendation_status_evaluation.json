@@ -1,0 +1,198 @@
+{
+  "counts": {
+    "class_distribution": {
+      "no_idea": 5107,
+      "not_recommended": 3730,
+      "recommended": 35771
+    },
+    "excluded_rows": 8757,
+    "total_canonical_rows": 53365,
+    "usable_labelled_rows": 44608
+  },
+  "failure_analysis": {
+    "lowest_text_model_f1_label": "no_idea",
+    "note": "Inspect the labelled confusion matrix; it is true rows by predicted columns."
+  },
+  "features": {
+    "fields": [
+      "title",
+      "body"
+    ],
+    "forbidden": [
+      "recommendation_status",
+      "rate",
+      "likes",
+      "dislikes",
+      "is_buyer",
+      "product aggregates"
+    ]
+  },
+  "improvement_over_dummy_macro_f1": 0.33479377582610537,
+  "input": {
+    "path": "data/processed/sunscreen_mvp/v1/sunscreen_comments_canonical.parquet",
+    "published_artifact_only": true
+  },
+  "labels": [
+    "no_idea",
+    "not_recommended",
+    "recommended"
+  ],
+  "limitations": [
+    "Single sunscreen-only holdout; no claim beyond this subset.",
+    "No hyperparameter tuning was performed on the holdout.",
+    "Text-only prediction does not establish product quality or medical suitability."
+  ],
+  "max_rss_kib": 389092,
+  "models": {
+    "dummy_most_frequent": {
+      "accuracy": 0.8019280349736576,
+      "configuration": {
+        "strategy": "most_frequent"
+      },
+      "confusion_matrix": {
+        "label_order": [
+          "no_idea",
+          "not_recommended",
+          "recommended"
+        ],
+        "orientation": "rows=true, columns=predicted",
+        "values": [
+          [
+            0,
+            0,
+            1021
+          ],
+          [
+            0,
+            0,
+            746
+          ],
+          [
+            0,
+            0,
+            7154
+          ]
+        ]
+      },
+      "fit_seconds": 0.018155815021600574,
+      "macro_f1": 0.2966925868325557,
+      "per_class": {
+        "no_idea": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 1021
+        },
+        "not_recommended": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 746
+        },
+        "recommended": {
+          "f1": 0.8900777604976672,
+          "precision": 0.8019280349736576,
+          "recall": 1.0,
+          "support": 7154
+        }
+      },
+      "prediction_seconds": 0.0008608949719928205
+    },
+    "text_tfidf_logistic_regression": {
+      "accuracy": 0.7841049209729851,
+      "configuration": {
+        "feature_fields": [
+          "title",
+          "body"
+        ],
+        "logistic_regression": {
+          "C": 1.0,
+          "class_weight": "balanced",
+          "max_iter": 1000,
+          "random_state": 20260830,
+          "solver": "lbfgs"
+        },
+        "vectorizer": {
+          "analyzer": "char_wb",
+          "min_df": 2,
+          "ngram_range": [
+            3,
+            5
+          ],
+          "sublinear_tf": true
+        }
+      },
+      "confusion_matrix": {
+        "label_order": [
+          "no_idea",
+          "not_recommended",
+          "recommended"
+        ],
+        "orientation": "rows=true, columns=predicted",
+        "values": [
+          [
+            578,
+            252,
+            191
+          ],
+          [
+            183,
+            526,
+            37
+          ],
+          [
+            1014,
+            249,
+            5891
+          ]
+        ]
+      },
+      "fit_seconds": 23.033175721007865,
+      "macro_f1": 0.6314863626586611,
+      "per_class": {
+        "no_idea": {
+          "f1": 0.413447782546495,
+          "precision": 0.3256338028169014,
+          "recall": 0.5661116552399609,
+          "support": 1021
+        },
+        "not_recommended": {
+          "f1": 0.5933446136491822,
+          "precision": 0.5121713729308666,
+          "recall": 0.7050938337801609,
+          "support": 746
+        },
+        "recommended": {
+          "f1": 0.8876666917803059,
+          "precision": 0.9627390096420984,
+          "recall": 0.8234554095610848,
+          "support": 7154
+        }
+      },
+      "prediction_seconds": 0.8795851559843868
+    }
+  },
+  "split": {
+    "algorithm": "StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=20260830); first valid fold",
+    "product_id_overlap_count": 0,
+    "seed": 20260830,
+    "test_class_distribution": {
+      "no_idea": 1021,
+      "not_recommended": 746,
+      "recommended": 7154
+    },
+    "test_product_count": 176,
+    "test_rows": 8921,
+    "train_class_distribution": {
+      "no_idea": 4086,
+      "not_recommended": 2984,
+      "recommended": 28617
+    },
+    "train_product_count": 689,
+    "train_rows": 35687
+  },
+  "target": {
+    "field": "recommendation_status",
+    "rule": "exclude null, non-string, and blank/whitespace values; preserve valid strings verbatim"
+  }
+}
